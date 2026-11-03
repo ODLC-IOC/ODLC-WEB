@@ -56,11 +56,8 @@ if ($c) {
 <?php } else { $s = static fn(string $k, string $val) => $req($k) === $val ? 'checked' : ''; ?>
 <section class="block"><div class="wrap prose">
   <h1>Comprar el Diagnóstico ODLC</h1>
-  <p>1.900 € + IVA · se descuenta íntegramente si después contrata el recorrido. Lea las condiciones de compra, rellene sus datos y acéptelas. Recibirá una copia por correo con la fecha de aceptación y, después, con la fecha de pago.</p>
+  <p>1.900 € + IVA · se descuenta íntegramente si después contrata el recorrido. Rellene sus datos y acepte las condiciones de compra. Recibirá una copia por correo con la fecha de aceptación y, después, con la fecha de pago.</p>
   <?php if ($errores): ?><div class="note" role="alert" style="border-left:4px solid #a33;padding:8px 12px"><?php foreach ($errores as $e) { echo '<p style="margin:4px 0">' . h($e) . '</p>'; } ?></div><?php endif; ?>
-  <h2>1. Condiciones de compra</h2>
-  <div style="max-height:460px;overflow:auto;border:1px solid #ddd;border-radius:8px;padding:4px 18px;background:#fff"><?= odlc_condiciones_html() ?></div>
-  <h2>2. Sus datos</h2>
   <form class="form" method="POST" action="contratar-diagnostico.php" id="contratar">
     <p hidden><label>No rellenar <input name="web"></label></p>
     <div><label>Contrata como…</label><div class="radio-cards two">
@@ -79,7 +76,7 @@ if ($c) {
       <label class="radio-card" data-solo="empresa"><input type="radio" name="pago" value="cuotas" <?= $s('pago', 'cuotas') ?>><b>Tres cuotas</b><small>Al contratar, a los 15 y a los 30 días</small></label>
       <label class="radio-card" data-solo="particular"><input type="radio" name="pago" value="klarna" <?= $s('pago', 'klarna') ?>><b>Plazos con Klarna</b><small>Klarna le ofrece los plazos al pagar</small></label>
     </div></div>
-    <label class="consent"><input type="checkbox" name="acepto" value="1" required><span>He leído y acepto las condiciones de compra del Diagnóstico ODLC, incluido que el precio es total y no cancelable.</span></label>
+    <label class="consent"><input type="checkbox" name="acepto" value="1" required><span>He leído y acepto las <a href="condiciones-diagnostico.html" target="_blank" rel="noopener">condiciones de compra del Diagnóstico ODLC</a>, incluido que el precio es total y no cancelable.</span></label>
     <label class="consent" data-solo="particular"><input type="checkbox" name="inicio" value="1"><span>Solicito que el Diagnóstico comience de inmediato y reconozco que, una vez prestado por completo, perderé el derecho de desistimiento; si desisto antes, abonaré las fases ya iniciadas.</span></label>
     <div><label for="c-firma">Firma: escriba su nombre completo</label><input id="c-firma" name="firma" required autocomplete="name" value="<?= h($req('firma')) ?>"></div>
     <div><button class="btn btn-primary" type="submit">Aceptar y continuar al pago</button></div>
