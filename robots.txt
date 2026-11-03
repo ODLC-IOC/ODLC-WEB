@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /gracias.html
+Disallow: /newsletter-gracias.html
+
+Sitemap: https://odlc.es/sitemap.xml
