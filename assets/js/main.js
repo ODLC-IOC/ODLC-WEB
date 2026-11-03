@@ -1,5 +1,7 @@
 /* Configuración: cuando Isabel tenga su enlace de reserva (Google Calendar, Calendly, etc.), pégalo aquí. */
 var CALENDAR_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/SVRwCe7HMUGxuT6WGxi68g2?anonymous&ismsaljsauthenabled';
+/* Enlace de reserva de la reunión de arranque del Diagnóstico ODLC (Microsoft Bookings). */
+var DIAGNOSTICO_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/5brH_X0naU6HDKSPi0UEOw2?anonymous&ismsaljsauthenabled';
 var CONTACT_EMAIL = 'isabel@odlc.es';
 /* Cuando Isabel cree la newsletter «Empresas y Patrimonios en Orden» en LinkedIn, pegar aquí su enlace. El botón aparece solo. */
 var NEWSLETTER_URL = '';
@@ -19,6 +21,9 @@ var LANZAMIENTO = { hasta: '', texto: '' };
   // Botones de calendario: solo aparecen cuando hay enlace configurado
   document.querySelectorAll('[data-calendar]').forEach(function (e) {
     if (CALENDAR_URL) { e.href = CALENDAR_URL; e.hidden = false; } else { e.hidden = true; }
+  });
+  document.querySelectorAll('[data-calendar-diagnostico]').forEach(function (e) {
+    if (DIAGNOSTICO_URL) { e.href = DIAGNOSTICO_URL; e.hidden = false; } else { e.hidden = true; }
   });
   document.querySelectorAll('[data-calendar-pending]').forEach(function (e) { e.hidden = !!CALENDAR_URL; });
 
