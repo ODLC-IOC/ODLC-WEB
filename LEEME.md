@@ -53,7 +53,7 @@ Imágenes para redes de cada página en `assets/img/og/` y portadas de los 26 ar
 
 ## Cookies (art. 22.2 LSSI y Guía de cookies de la AEPD, 2023)
 
-- Hoy la web **no instala ninguna cookie** hasta que alguien guarda una elección, ni se conecta a terceros: las tipografías están alojadas en `assets/fonts/`. Por eso no aparece aviso: no hay nada que consentir.
+- **Google Analytics 4 activo desde el 4/11/2026** (`GA4_ID = 'G-DY3P85H57T'`). No se carga hasta que la persona acepta las cookies analíticas, con Google Signals y la personalización de anuncios desactivados. Las tipografías siguen alojadas en `assets/fonts/`.
 - `assets/js/cookies.js` es el gestor. Para medir visitas o campañas, pegar el identificador en `GA4_ID` (Google Analytics 4) o `LINKEDIN_PARTNER_ID` (LinkedIn Insight Tag). El aviso aparece solo, con «Aceptar todas», «Rechazar todas» y «Configurar» al mismo nivel, y las herramientas no se cargan hasta que la persona acepta.
 - La tabla de `politica-de-cookies.html` se rellena sola con lo que esté activo. «Configurar cookies», al pie de todas las páginas, permite cambiar o retirar el consentimiento.
 - Si se añade cualquier otra herramienta de terceros (vídeo incrustado, chat, píxel), hay que darla de alta en el gestor y en la política antes de publicarla.
@@ -75,3 +75,10 @@ En `red-de-colaboradores.html` cada área con partner lleva ficha propia (clase 
 - **Confirmar con Isabel:** precio de Formación (por taller y jornada, no por persona); fecha y condiciones de la tarifa de lanzamiento; las webs que quiere mostrar en «Proyectos recientes»; los módulos de Orden continuo (PBC y seguros); si las campañas ESG llevan precio.
 - **Iván Fernández (IT e IA):** su ficha no lleva enlace porque aún no tiene web.
 - **Partners:** confirmar con Solve Legal, Iuris Corporate y Sabseg los textos de sus fichas.
+
+## Google Analytics 4
+
+- Propiedad odlc.es, ID de medición `G-DY3P85H57T`. Retención de datos: 14 meses (la política de privacidad lo dice así).
+- Eventos clave: `file_download` (automático, medición mejorada), `mapa_completado`, y las páginas `gracias.html` y `newsletter-gracias.html`.
+- `mapa_completado` todavía no existe en la web. Cuando se publique la herramienta del mapa, en el momento en que se completa: `odlcEvent('mapa_completado');`. Solo se envía si la persona ha aceptado las cookies.
+- Los formularios envían por POST: el email nunca aparece en la dirección de las páginas de gracias, así que Analytics no recibe datos personales.
