@@ -18,6 +18,7 @@ Web estática de varias páginas, preparada para SEO y para publicarse en Netlif
 | Calculadora | `calculadora.html` + `assets/js/calculadora.js` | Hacerlo usted, contratar a un interim o hacerlo con ODLC |
 | Quiénes somos | `quienes-somos.html` | Isabel como fundadora, red de asesores, casos y herramientas |
 | Reservar sesión | `reservar-sesion.html` | Formulario de sesión gratuita o Diagnóstico (formulario de Netlify `diagnostico`) |
+| Recursos gratuitos | `recursos.html` | Guía «Que el conocimiento no se vaya con las personas» (PDF en `assets/descargas/`), «Mapa de empresa» (herramienta en `mapa-de-empresa.html` + `assets/js/mapa.js`, que calcula todo en el navegador sin enviar datos; y la skill para Claude en ZIP como opción) y lista rápida de copias de seguridad (`#copias-de-seguridad`). Enlazada en el pie de todas las páginas. Se lanza en LinkedIn el jueves 12/11/2026: la web tiene que estar subida antes |
 | Método, tarifas, red, blog y legales | `metodo-odlc.html`, `tarifas.html`, `red-de-colaboradores.html`, `blog/`, `aviso-legal.html`… | |
 
 Páginas retiradas, con redirección 301 en `netlify.toml`: Índice ODLC, Barómetro ODLC, simulador, Sobre Isabel, diagnostico.html y las páginas de Secretaría, Compliance, Seguros e Implantación (integradas en las fases).
@@ -43,9 +44,9 @@ En `assets/js/main.js`, rellenar `LANZAMIENTO` con fecha de fin y texto. Aparece
 
 Los 26 artículos están ya en `blog/`, uno por lunes. La portada del blog solo muestra los que ya han llegado a su fecha, así que se puede subir todo de una vez. Para ver todos antes de tiempo: `blog/index.html?todos=1`. Los textos se generan con `build_blog.py` y `blog_data.py`; si se edita un artículo a mano, mantener la fecha en sus datos estructurados.
 
-## Reservar sesión
+## Reservar sesión (Microsoft Bookings, 04/11/2026)
 
-Todas las páginas llevan a `reservar-sesion.html`. En cuanto se pegue el enlace del calendario en `CALENDAR_URL` (`assets/js/main.js`), todos los botones van directos a él.
+En `assets/js/main.js`: `CALENDAR_URL` es la sesión gratuita y la usan todos los botones «Reservar sesión» (se abre en pestaña nueva); `DIAGNOSTICO_URL` es la reunión de arranque del Diagnóstico y aparece en `reservar-sesion.html` y en la página del Diagnóstico. El formulario de `reservar-sesion.html` se mantiene como alternativa por escrito y es adonde lleva «Enviarnos el resultado» del Mapa de empresa.
 
 ## Imágenes
 
@@ -58,6 +59,7 @@ Imágenes para redes de cada página en `assets/img/og/` y portadas de los 26 ar
 - La tabla de `politica-de-cookies.html` se rellena sola con lo que esté activo. «Configurar cookies», al pie de todas las páginas, permite cambiar o retirar el consentimiento.
 - Si se añade cualquier otra herramienta de terceros (vídeo incrustado, chat, píxel), hay que darla de alta en el gestor y en la política antes de publicarla.
 - Antes de publicar: completar NIF y domicilio en aviso legal, privacidad y cookies.
+- Revisión del 04/11/2026: la web sigue sin instalar cookies, así que no lleva aviso. Política de privacidad ampliada (Mapa de empresa, Recursos, Netlify como encargado y transferencia con el Marco de Privacidad UE-EE. UU.). Firmar el DPA de Netlify. Si se incrusta el calendario de reservas dentro de la web (iframe de Calendly o similar), darlo de alta en `cookies.js` antes: instala cookies de terceros. Para medir visitas sin aviso, usar una analítica sin cookies (p. ej. Netlify Analytics, en servidor) y mencionarla en la política de privacidad.
 
 ## Newsletter «Empresas y Patrimonios en Orden»
 
@@ -70,8 +72,18 @@ En `red-de-colaboradores.html` cada área con partner lleva ficha propia (clase 
 
 ## Pendiente antes de publicar
 
+- **Recursos · skill «Mapa de empresa»:** la versión publicada (`assets/descargas/skill-mapa-de-empresa.zip`) la ha preparado el equipo con el esquema de la guía. Si Isabel tiene la suya, se sustituye el ZIP manteniendo el nombre del archivo y de la carpeta `mapa-de-empresa`.
+
 - **NIF y domicilio** de Isabel en `aviso-legal.html`, `privacidad.html` y `politica-de-cookies.html` (marcados como [pendiente]). El titular legal de la web sigue siendo Isabel Olivares de la Cerda.
-- **Enlace del calendario** en `CALENDAR_URL`.
 - **Confirmar con Isabel:** precio de Formación (por taller y jornada, no por persona); fecha y condiciones de la tarifa de lanzamiento; las webs que quiere mostrar en «Proyectos recientes»; los módulos de Orden continuo (PBC y seguros); si las campañas ESG llevan precio.
 - **Iván Fernández (IT e IA):** su ficha no lleva enlace porque aún no tiene web.
 - **Partners:** confirmar con Solve Legal, Iuris Corporate y Sabseg los textos de sus fichas.
+
+## Google Analytics 4 (preparado el 04/11/2026)
+
+1. Pegar el ID de medición (`G-…`) en `assets/js/cookies.js`, en `GA4_ID`, y volver a subir la web. Aparecen solos el aviso de cookies, la fila de Google Analytics en la política de cookies y el apartado de Google Analytics en la política de privacidad.
+2. Google Analytics solo se carga después de «Aceptar». Señales de Google y personalización de anuncios desactivadas en el código.
+3. En Google Analytics → Administrar: retención de datos de eventos **14 meses** (la política de privacidad dice 14 meses); señales de Google **desactivadas**; aceptar las condiciones de tratamiento de datos; recogida de datos granulares de ubicación y dispositivo **desactivada**.
+4. Medición mejorada activada (incluye descargas de PDF y ZIP). Evento propio `mapa_completado` desde el Mapa de empresa.
+5. Eventos clave dados de alta: `mapa_completado`, `file_download`, `gracias.html` (solicitud por formulario) y `newsletter-gracias.html`. Añadir `reservar_sesion` (clic en Microsoft Bookings, con el parámetro `tipo`: `sesion_gratuita` o `arranque_diagnostico`), porque la mayoría de las reservas ya no pasan por `gracias.html`.
+6. ID de medición configurado: `G-DY3P85H57T`.

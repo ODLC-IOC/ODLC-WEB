@@ -657,3 +657,7 @@ section.alt .route-letter{background:var(--stone-2)}
 .price-table{min-width:0}
 .svc-check{font-size:15px;color:var(--ink)}
 @media (max-width:860px){.calc-table{min-width:0}}
+/* Menú con «Recursos» (04/11/2026): que quepa en una línea en pantallas medianas */
+.menu a{white-space:nowrap}
+@media (max-width:1180px){.site-header .brand-tag{display:none}.menu{gap:16px}}
+@media (min-width:821px) and (max-width:960px){.menu{gap:12px}.menu a{font-size:13px}.menu .btn{padding:8px 12px}}

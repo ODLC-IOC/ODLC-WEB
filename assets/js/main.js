@@ -1,6 +1,6 @@
-/* Configuración: cuando Isabel tenga su enlace de reserva (Google Calendar, Calendly, etc.), pégalo aquí. */
+/* Reservas en Microsoft Bookings (04/11/2026). CALENDAR_URL: sesión gratuita, la usan todos los botones «Reservar sesión».
+   DIAGNOSTICO_URL: reunión de arranque del Diagnóstico ODLC, para quien ya ha decidido contratarlo. */
 var CALENDAR_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/SVRwCe7HMUGxuT6WGxi68g2?anonymous&ismsaljsauthenabled';
-/* Enlace de reserva de la reunión de arranque del Diagnóstico ODLC (Microsoft Bookings). */
 var DIAGNOSTICO_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/5brH_X0naU6HDKSPi0UEOw2?anonymous&ismsaljsauthenabled';
 var CONTACT_EMAIL = 'isabel@odlc.es';
 /* Cuando Isabel cree la newsletter «Empresas y Patrimonios en Orden» en LinkedIn, pegar aquí su enlace. El botón aparece solo. */
@@ -22,10 +22,16 @@ var LANZAMIENTO = { hasta: '', texto: '' };
   document.querySelectorAll('[data-calendar]').forEach(function (e) {
     if (CALENDAR_URL) { e.href = CALENDAR_URL; e.hidden = false; } else { e.hidden = true; }
   });
-  document.querySelectorAll('[data-calendar-diagnostico]').forEach(function (e) {
-    if (DIAGNOSTICO_URL) { e.href = DIAGNOSTICO_URL; e.hidden = false; } else { e.hidden = true; }
-  });
   document.querySelectorAll('[data-calendar-pending]').forEach(function (e) { e.hidden = !!CALENDAR_URL; });
+  document.querySelectorAll('[data-calendar-diag]').forEach(function (e) {
+    if (DIAGNOSTICO_URL) { e.href = DIAGNOSTICO_URL; e.target = '_blank'; e.rel = 'noopener'; e.hidden = false; } else { e.hidden = true; }
+  });
+  // Medición: clic en una reserva (solo llega a Google Analytics si la persona aceptó las analíticas)
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href]'); if (!a || !window.odlcTrack) return;
+    if (CALENDAR_URL && a.href === CALENDAR_URL) window.odlcTrack('reservar_sesion', { tipo: 'sesion_gratuita', pagina: location.pathname });
+    else if (DIAGNOSTICO_URL && a.href === DIAGNOSTICO_URL) window.odlcTrack('reservar_sesion', { tipo: 'arranque_diagnostico', pagina: location.pathname });
+  });
 
   // ───── Formulario de diagnóstico ─────
   var form = document.getElementById('diagnostico-form');

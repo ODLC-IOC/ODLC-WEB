@@ -2,15 +2,15 @@
    Hoy la web solo usa una cookie técnica propia (odlc_consent) y no muestra aviso porque no hay nada que consentir.
    Para activar medición o publicidad, pegar aquí los identificadores: el aviso aparecerá solo y
    las herramientas se cargarán únicamente después de que la persona acepte. */
-var GA4_ID = '';               // Google Analytics 4, p. ej. 'G-XXXXXXXXXX'
+var GA4_ID = 'G-DY3P85H57T';               // Google Analytics 4, p. ej. 'G-XXXXXXXXXX'
 var LINKEDIN_PARTNER_ID = '';  // LinkedIn Insight Tag, p. ej. '1234567'
 var CONSENT_DAYS = 365;        // la AEPD considera buena práctica no superar 24 meses
-var POLICY_VERSION = '2026-10-27';
+var POLICY_VERSION = '2026-11-04';
 
 (function () {
   var NAME = 'odlc_consent';
   var TOOLS = [];
-  if (GA4_ID) TOOLS.push({ cat: 'analiticas', name: 'Google Analytics 4', owner: 'Google Ireland Ltd.', cookies: '_ga, _ga_*', dur: 'hasta 2 años', purpose: 'Medir de forma estadística cómo se usa la web (páginas vistas, origen de las visitas).' });
+  if (GA4_ID) TOOLS.push({ cat: 'analiticas', name: 'Google Analytics 4', owner: 'Google Ireland Ltd.', cookies: '_ga, _ga_*', dur: 'hasta 2 años', purpose: 'Medir de forma estadística cómo se usa la web (páginas vistas, origen de las visitas, descargas, uso de las herramientas y clics en reservar). Los datos de cada visita se conservan 14 meses en Google Analytics.' });
   if (LINKEDIN_PARTNER_ID) TOOLS.push({ cat: 'publicidad', name: 'LinkedIn Insight Tag', owner: 'LinkedIn Ireland Unlimited Company', cookies: 'li_sugr, bcookie, lidc, UserMatchHistory, AnalyticsSyncHistory', dur: 'de 1 día a 6 meses', purpose: 'Medir el resultado de las campañas en LinkedIn y mostrar publicidad relacionada.' });
   var has = function (c) { return TOOLS.some(function (t) { return t.cat === c; }); };
   var read = function () {
@@ -38,7 +38,7 @@ var POLICY_VERSION = '2026-10-27';
       loaded.ga = 1;
       var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA4_ID; document.head.appendChild(s);
       window.dataLayer = window.dataLayer || []; window.gtag = function () { dataLayer.push(arguments); };
-      gtag('js', new Date()); gtag('config', GA4_ID);
+      gtag('js', new Date()); gtag('config', GA4_ID, { allow_google_signals: false, allow_ad_personalization_signals: false });
     }
     if (c.m && LINKEDIN_PARTNER_ID && !loaded.li) {
       loaded.li = 1;
@@ -46,6 +46,10 @@ var POLICY_VERSION = '2026-10-27';
       var l = document.createElement('script'); l.async = true; l.src = 'https://snap.licdn.com/li.lms-analytics/insight.min.js'; document.head.appendChild(l);
     }
   };
+  // Eventos propios: solo se envían si la persona ha aceptado las analíticas
+  window.odlcTrack = function (name, params) { if (loaded.ga && window.gtag) gtag('event', name, params || {}); };
+  // Textos de la política de privacidad que solo aplican si Google Analytics está activo
+  Array.prototype.forEach.call(document.querySelectorAll('[data-if-ga]'), function (el) { el.hidden = !GA4_ID; });
   var policyHref = (document.querySelector('a[href$="politica-de-cookies.html"]') || {}).getAttribute ? document.querySelector('a[href$="politica-de-cookies.html"]').getAttribute('href') : 'politica-de-cookies.html';
   var box = null;
   var close = function () { if (box) { box.remove(); box = null; } };
