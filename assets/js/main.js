@@ -1,7 +1,7 @@
-/* Reservas en Microsoft Bookings (04/11/2026). CALENDAR_URL: sesión gratuita, la usan todos los botones «Reservar sesión».
+/* Reservas en citas.odlc.es (05/11/2026): la página de citas de OdlC, que crea la cita en Outlook/Bookings por detrás. CALENDAR_URL: sesión gratuita, la usan todos los botones «Reservar sesión».
    DIAGNOSTICO_URL: reunión de arranque del Diagnóstico ODLC, para quien ya ha decidido contratarlo. */
-var CALENDAR_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/SVRwCe7HMUGxuT6WGxi68g2?anonymous&ismsaljsauthenabled';
-var DIAGNOSTICO_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/5brH_X0naU6HDKSPi0UEOw2?anonymous&ismsaljsauthenabled';
+var CALENDAR_URL = 'https://citas.odlc.es/reservar';
+var DIAGNOSTICO_URL = 'https://citas.odlc.es/reservar';
 var CONTACT_EMAIL = 'isabel@odlc.es';
 /* Cuando Isabel cree la newsletter «Empresas y Patrimonios en Orden» en LinkedIn, pegar aquí su enlace. El botón aparece solo. */
 var NEWSLETTER_URL = '';
