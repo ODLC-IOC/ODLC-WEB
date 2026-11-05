@@ -1,12 +1,36 @@
 [build]
   publish = "."
 
+# Funciones del servidor (reuniones, invitaciones y API privada): netlify/functions
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "SAMEORIGIN"
+
+# Tarjeta digital, tarjeta QR y reuniones: fuera de buscadores
+[[headers]]
+  for = "/vcard_ioc*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/qr_ioc*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/assets/descargas/*.vcf"
+  [headers.values]
+    Content-Type = "text/vcard; charset=utf-8"
+    Content-Disposition = "attachment; filename=\"Isabel-Olivares-de-la-Cerda-ODLC.vcf\""
+    X-Robots-Tag = "noindex"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/assets/img/*"
@@ -80,3 +104,25 @@
   to = "/servicios/orden-continuo.html"
   status = 301
 
+
+# Tarjeta digital y tarjeta QR con URL limpia (05/11/2026).
+# /reuniones, /r/:id y /api/* los sirven las funciones (netlify/functions).
+[[redirects]]
+  from = "/vcard_ioc"
+  to = "/vcard_ioc.html"
+  status = 200
+
+[[redirects]]
+  from = "/vcard_ioc/"
+  to = "/vcard_ioc"
+  status = 301
+
+[[redirects]]
+  from = "/qr_ioc"
+  to = "/qr_ioc.html"
+  status = 200
+
+[[redirects]]
+  from = "/qr_ioc/"
+  to = "/qr_ioc"
+  status = 301

@@ -1,0 +1,13 @@
+{
+  "name": "odlc-web",
+  "private": true,
+  "type": "module",
+  "description": "Web de ODLC: páginas estáticas + funciones de Netlify (tarjeta, reuniones e invitaciones)",
+  "scripts": {
+    "claves": "node scripts/generar-claves.mjs",
+    "test": "node scripts/pruebas.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.7"
+  }
+}

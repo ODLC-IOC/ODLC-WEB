@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Olivares de la Cerda;Isabel;;;
+FN:Isabel Olivares de la Cerda
+ORG:ODLC
+TEL;TYPE=CELL,VOICE:+34 667 61 31 40
+EMAIL;TYPE=INTERNET,WORK:isabel@odlc.es
+URL;TYPE=WORK:https://odlc.es
+item1.URL:https://www.linkedin.com/in/isabel-olivares-de-la-cerda/
+item1.X-ABLabel:LinkedIn
+X-SOCIALPROFILE;TYPE=linkedin:https://www.linkedin.com/in/isabel-olivares-de-la-cerda/
+ADR;TYPE=WORK:;;;Madrid;;;España
+END:VCARD

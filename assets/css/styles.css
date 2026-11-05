@@ -661,3 +661,10 @@ section.alt .route-letter{background:var(--stone-2)}
 .menu a{white-space:nowrap}
 @media (max-width:1180px){.site-header .brand-tag{display:none}.menu{gap:16px}}
 @media (min-width:821px) and (max-width:960px){.menu{gap:12px}.menu a{font-size:13px}.menu .btn{padding:8px 12px}}
+
+/* Quiénes somos: contacto descargable bajo la fotografía (05/11/2026) */
+.vcard-link{display:flex;align-items:stretch;gap:8px;margin:14px 0 0}
+.vcard-link a{display:inline-flex;align-items:center;gap:9px;padding:10px 16px;border:1px solid var(--brass);border-radius:6px;color:var(--green);background:#fff;text-decoration:none;font-size:12.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
+.vcard-link a:hover{background:var(--brass-soft)}
+.vcard-link svg{color:var(--brass);flex:0 0 16px}
+.vcard-link .vcard-qr{padding:10px 12px}

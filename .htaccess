@@ -32,3 +32,15 @@ Redirect 301 /servicios/implantacion-operativa-digital.html /servicios/puesta-en
 Redirect 301 /servicios/secretaria-societaria-consejo.html /servicios/orden-continuo.html
 Redirect 301 /servicios/compliance-pbc-titularidad-real.html /servicios/orden-continuo.html
 Redirect 301 /servicios/seguros-sociedades-activos.html /servicios/orden-continuo.html
+
+# Tarjeta digital y tarjeta QR con URL limpia (05/11/2026)
+AddType "text/vcard; charset=utf-8" .vcf
+RewriteRule ^vcard_ioc/?$ vcard_ioc.html [L]
+RewriteRule ^qr_ioc/?$ qr_ioc.html [L]
+<IfModule mod_headers.c>
+  <If "%{REQUEST_URI} =~ m#^/(vcard_ioc|qr_ioc)#">
+    Header set X-Robots-Tag "noindex, nofollow"
+  </If>
+</IfModule>
+# Atención: /reuniones, /r/... y /api/... necesitan las funciones de Netlify.
+# En Hostinger (Apache) solo funcionan la tarjeta, el QR y la vCard.

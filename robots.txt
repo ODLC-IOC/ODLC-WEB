@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /gracias.html
 Disallow: /newsletter-gracias.html
+Disallow: /reuniones
+Disallow: /api/
 
 Sitemap: https://odlc.es/sitemap.xml

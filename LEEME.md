@@ -87,3 +87,62 @@ En `red-de-colaboradores.html` cada área con partner lleva ficha propia (clase 
 4. Medición mejorada activada (incluye descargas de PDF y ZIP). Evento propio `mapa_completado` desde el Mapa de empresa.
 5. Eventos clave dados de alta: `mapa_completado`, `file_download`, `gracias.html` (solicitud por formulario) y `newsletter-gracias.html`. Añadir `reservar_sesion` (clic en Microsoft Bookings, con el parámetro `tipo`: `sesion_gratuita` o `arranque_diagnostico`), porque la mayoría de las reservas ya no pasan por `gracias.html`.
 6. ID de medición configurado: `G-DY3P85H57T`.
+
+## Tarjeta digital, QR y reuniones (05/11/2026)
+
+### Rutas
+
+| URL | Qué es | Archivo |
+|---|---|---|
+| `/vcard_ioc` | Tarjeta de visita digital (noindex, fuera del menú) | `vcard_ioc.html` |
+| `/qr_ioc` | Tarjeta QR para enseñarla desde el móvil | `qr_ioc.html` |
+| `/reuniones` | Panel privado de reuniones (exige sesión) | `netlify/functions/panel.mjs` |
+| `/r/:id` y `/r/:id/calendario.ics` | Invitación pública y su archivo de calendario (solo lectura) | `netlify/functions/invitacion.mjs` |
+| `/api/...` | Operaciones del panel: acceso, reuniones, Microsoft 365 | `netlify/functions/api.mjs` |
+
+- vCard 3.0 real: `assets/descargas/isabel-olivares-de-la-cerda-odlc.vcf` (UTF-8, nombre y apellidos separados, ODLC, móvil, correo, web, LinkedIn y Madrid, España; sin cargo). La usan la tarjeta y el botón «Guardar contacto · vCard» bajo la foto de Quiénes somos.
+- QR permanente a `https://odlc.es/vcard_ioc`: `assets/img/qr/qr-vcard-ioc.svg` y `.png`; tarjeta QR descargable: `assets/img/qr/tarjeta-qr-isabel-olivares-odlc.png`. Mientras no cambie la URL, el QR no caduca.
+- Estilos: `assets/css/tarjeta.css` (se carga después de `styles.css` y usa sus tipografías y colores). Logotipo original: `logo-odlc-claro.svg` sobre verde y `logo-odlc.svg` sobre blanco.
+- Vista previa en WhatsApp de las invitaciones: `assets/img/og/invitacion-odlc.png` (sin datos de la reunión).
+- LinkedIn corregido en toda la web: `https://www.linkedin.com/in/isabel-olivares-de-la-cerda/`.
+
+### Requisitos de publicación
+
+El panel y las invitaciones funcionan con **Netlify Functions** y **Netlify Blobs** (datos guardados en la UE, Fráncfort). Para que Netlify instale `@netlify/blobs` y publique las funciones, el sitio tiene que estar **enlazado al repositorio de GitHub** (Site configuration → Build & deploy → Link repository) o publicarse con `netlify deploy`. La subida manual arrastrando la carpeta no publica funciones. En Hostinger solo funcionarían la tarjeta, el QR y la vCard (reglas en `.htaccess`).
+
+### Variables de entorno (Netlify → Project configuration → Environment variables)
+
+Nunca en el repositorio. Para generar o cambiar la contraseña: `npm install` y `npm run claves` (pide la contraseña sin mostrarla y devuelve el hash).
+
+| Variable | Valor |
+|---|---|
+| `ODLC_ADMIN_EMAIL` | `isabel@odlc.es` |
+| `ODLC_ADMIN_PASSWORD_HASH` | Hash scrypt de la contraseña (no la contraseña) |
+| `ODLC_SESSION_SECRET` | Cadena aleatoria de 48 bytes |
+| `ODLC_TOKEN_KEY` | 32 bytes aleatorios en base64 (cifra el token de Microsoft) |
+| `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | De Microsoft Entra ID (ver abajo). Marcar `MS_CLIENT_SECRET` como secreto |
+
+Tras crear o cambiar variables, hacer un nuevo deploy.
+
+### Seguridad
+
+- Contraseña solo como hash scrypt en el servidor; sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, firmada y de 8 horas; bloqueo de 15 minutos tras 5 intentos fallidos; las peticiones que cambian datos deben venir de odlc.es.
+- Sin sesión, `/reuniones` solo entrega la pantalla de acceso, y la API responde 401.
+- Identificadores de invitación aleatorios de 128 bits. La invitación muestra nombre del invitado, asunto, fecha, enlace de Teams y la descripción; nunca su correo, su móvil ni las notas privadas.
+- El token de Microsoft se guarda cifrado (AES-256-GCM) en el servidor; el navegador no lo recibe nunca.
+
+### Microsoft 365 (modo automático): registrar la aplicación en Microsoft Entra ID
+
+1. Entrar en https://entra.microsoft.com con una cuenta administradora de odlc.es → **Identity → Applications → App registrations → New registration**.
+2. Nombre: `ODLC Reuniones`. Supported account types: **Accounts in this organizational directory only (Single tenant)**. Redirect URI: plataforma **Web**, `https://odlc.es/api/ms/callback`. **Register**.
+3. En **Overview**, copiar *Application (client) ID* → `MS_CLIENT_ID` y *Directory (tenant) ID* → `MS_TENANT_ID`.
+4. **Certificates & secrets → Client secrets → New client secret** (24 meses). Copiar el **Value** (solo se ve una vez) → `MS_CLIENT_SECRET`. Apuntar en el calendario renovarlo antes de que caduque.
+5. **API permissions → Add a permission → Microsoft Graph → Delegated permissions**: `openid`, `offline_access`, `User.Read`, `Calendars.ReadWrite`. Pulsar **Grant admin consent for ODLC** (opcional, pero evita la pantalla de consentimiento).
+6. No hace falta ningún permiso de aplicación ni `OnlineMeetings`: el evento se crea en el calendario de isabel@odlc.es con `isOnlineMeeting` y Teams genera el enlace.
+7. Guardar las variables en Netlify, nuevo deploy, entrar en `/reuniones` → **Conectar con Microsoft 365** → entrar con isabel@odlc.es. El panel comprueba en ese momento que el calendario admite Teams (`allowedOnlineMeetingProviders`) y solo acepta la cuenta isabel@odlc.es.
+
+Al editar una reunión automática se actualiza el evento de Outlook; al cancelarla se cancela (o se elimina si no tenía asistentes). La casilla «Enviar también la convocatoria de Outlook» añade al invitado como asistente y Outlook le envía el correo.
+
+### Pruebas
+
+`npm install && npm test` ejecuta 30 pruebas sin red: horario de verano e invierno, acceso, bloqueo, validación, persistencia, invitación, `.ics`, Google Calendar, WhatsApp, edición, cancelación y el flujo de Microsoft Graph simulado.
