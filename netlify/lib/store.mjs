@@ -27,6 +27,14 @@ export async function del(key) {
   return store().delete(key);
 }
 
+// Materiales adjuntos: f/<idReunión>/<idArchivo>
+export async function setFile(key, data, metadata) {
+  return store().set(key, data, { metadata });
+}
+export async function getFile(key) {
+  return store().getWithMetadata(key, { type: 'arrayBuffer' });
+}
+
 export async function listMeetings() {
   const { blobs } = await store().list({ prefix: 'm/' });
   const items = await Promise.all(blobs.map((b) => getJSON(b.key)));

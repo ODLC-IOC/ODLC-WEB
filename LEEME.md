@@ -146,3 +146,11 @@ Al editar una reunión automática se actualiza el evento de Outlook; al cancela
 ### Pruebas
 
 `npm install && npm test` ejecuta 30 pruebas sin red: horario de verano e invierno, acceso, bloqueo, validación, persistencia, invitación, `.ics`, Google Calendar, WhatsApp, edición, cancelación y el flujo de Microsoft Graph simulado.
+
+### Novedades del panel (05/11/2026, tarde)
+
+- **Asistentes de OdlC**: campo propio (uno por línea); por defecto, Isabel. Aparecen en la invitación y en el calendario.
+- **Materiales**: archivos PDF, Word, Excel, PowerPoint, imágenes, texto o CSV de hasta 4 MB (límite de Netlify Functions), guardados en Netlify Blobs y descargables desde la invitación (`/r/:id/material/:idArchivo`); se ocultan si la reunión se cancela. Para archivos grandes o que vayan a cambiar, pegar un **enlace de OneDrive o SharePoint** (compartido como «Cualquier persona con el vínculo puede ver»): el invitado siempre abre la última versión.
+- **Importar de Outlook (.ics)**: rellena asunto, fecha, hora (convierte la zona de Outlook, p. ej. «Romance Standard Time»), duración, enlace de Teams y descripción.
+- **Pegar la invitación de Teams entera** en el campo del enlace: se queda solo con el enlace.
+- Invitación esquemática (fecha, hora, zona, duración) y «Añadir al calendario» abre un selector.

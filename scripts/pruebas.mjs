@@ -7,6 +7,8 @@ const mem = new Map();
 globalThis.__ODLC_TEST_STORE = {
   async get(k, o) { const v = mem.get(k); return v === undefined ? null : o && o.type === 'json' ? JSON.parse(v) : v; },
   async setJSON(k, v) { mem.set(k, JSON.stringify(v)); return { modified: true }; },
+  async set(k, v, o) { mem.set(k, { data: Buffer.from(v), metadata: (o && o.metadata) || {} }); return { modified: true }; },
+  async getWithMetadata(k) { const v = mem.get(k); return v && v.data ? { data: v.data, metadata: v.metadata } : null; },
   async delete(k) { mem.delete(k); },
   async list({ prefix }) { return { blobs: [...mem.keys()].filter((k) => k.startsWith(prefix)).map((key) => ({ key })) }; },
 };
@@ -90,7 +92,7 @@ await t('Validación: duración no permitida', async () => {
 });
 let meeting;
 await t('Crear reunión manual', async () => {
-  const r = await api(req('/api/reuniones', { method: 'POST', cookie, body: { mode: 'manual', guestName: 'María', guestEmail: 'maria@example.com', guestPhone: '600 11 22 33', subject: 'Primera reunión', date: '2026-11-10', time: '11:00', duration: 60, teamsUrl: TEAMS, description: 'Revisión de la estructura societaria.', notes: 'Nota privada' } }), ctx());
+  const r = await api(req('/api/reuniones', { method: 'POST', cookie, body: { mode: 'manual', guestName: 'María', guestEmail: 'maria@example.com', guestPhone: '600 11 22 33', team: 'Isabel Olivares de la Cerda\nAna Pérez', subject: 'Primera reunión', date: '2026-11-10', time: '11:00', duration: 60, teamsUrl: TEAMS, description: 'Revisión de la estructura societaria.', notes: 'Nota privada' } }), ctx());
   assert.equal(r.status, 201);
   meeting = (await r.json()).meeting;
   assert.match(meeting.id, M.ID_RE);
@@ -111,7 +113,7 @@ await t('Invitación: datos, botón de Teams y metadatos Open Graph sin datos pr
   const r = await inv(req('/r/' + meeting.id), ctx({ id: meeting.id }));
   page = await r.text();
   assert.equal(r.status, 200);
-  for (const s of ['Invitación a reunión', 'Reunión con OdlC', 'Isabel Olivares de la Cerda · para María', '10 nov 2026', 'Martes', '11:00 h', 'hasta las 12:00', 'UTC+1', '60 min', 'Microsoft Teams', 'Unirse a la reunión', 'Añadir al calendario', '¿En qué calendario?', 'logo-odlc-claro.svg', 'og:image']) assert.ok(page.includes(s), 'falta: ' + s);
+  for (const s of ['Invitación a reunión', 'Reunión con OdlC', 'Isabel Olivares de la Cerda · Ana Pérez', 'para María', '10 nov 2026', 'Martes', '11:00 h', 'hasta las 12:00', 'UTC+1', '60 min', 'Microsoft Teams', 'Unirse a la reunión', 'Añadir al calendario', '¿En qué calendario?', 'logo-odlc-claro.svg', 'og:image']) assert.ok(page.includes(s), 'falta: ' + s);
   assert.ok(page.includes(TEAMS.replace(/&/g, '&amp;')));
   const og = page.match(/<meta property="og:[^>]+>/g).join(' ');
   assert.ok(!og.includes('María') && !og.includes('Primera reunión'), 'la vista previa no debe incluir datos de la reunión');
@@ -132,6 +134,32 @@ await t('.ics válido con hora de Madrid y enlace de Teams', async () => {
 await t('Google Calendar recibe la hora UTC correcta', () => {
   const g = new URL(M.calendarLinks({ ...meeting }).google);
   assert.equal(g.searchParams.get('dates'), '20261110T100000Z/20261110T110000Z');
+});
+
+// ---------- Materiales ----------
+let fileId;
+await t('Materiales: subir PDF, añadir enlace y verlos en la invitación', async () => {
+  const pdf = Buffer.from('%PDF-1.4 prueba');
+  const r = await api(new Request(`${BASE}/api/reuniones/${meeting.id}/materiales`, { method: 'POST', body: pdf, headers: { cookie, origin: BASE, 'content-type': 'application/pdf', 'content-length': String(pdf.length), 'x-file-name': encodeURIComponent('Orden del día.pdf') } }), ctx());
+  assert.equal(r.status, 201);
+  fileId = (await r.json()).meeting.materials[0].id;
+  const l = await api(req(`/api/reuniones/${meeting.id}/materiales`, { method: 'POST', cookie, body: { url: 'https://onedrive.live.com/x', name: 'Presentación' } }), ctx());
+  assert.equal(l.status, 201);
+  const p = await (await inv(req('/r/' + meeting.id), ctx({ id: meeting.id }))).text();
+  assert.ok(p.includes('Materiales') && p.includes('Orden del día.pdf') && p.includes('Presentación'));
+  const d = await inv(req(`/r/${meeting.id}/material/${fileId}`), ctx({ id: meeting.id, fid: fileId }));
+  assert.equal(d.status, 200); assert.match(d.headers.get('content-disposition'), /attachment/);
+  assert.equal(Buffer.from(await d.arrayBuffer()).toString(), '%PDF-1.4 prueba');
+});
+await t('Materiales: rechaza tipos no admitidos y subidas sin sesión', async () => {
+  const h = { origin: BASE, 'content-type': 'application/x-msdownload', 'x-file-name': 'a.exe' };
+  assert.equal((await api(new Request(`${BASE}/api/reuniones/${meeting.id}/materiales`, { method: 'POST', body: 'MZ', headers: { ...h, cookie } }), ctx())).status, 415);
+  assert.equal((await api(new Request(`${BASE}/api/reuniones/${meeting.id}/materiales`, { method: 'POST', body: 'x', headers: { ...h, 'content-type': 'application/pdf' } }), ctx())).status, 401);
+});
+await t('Materiales: quitar un archivo lo borra', async () => {
+  const r = await api(req(`/api/reuniones/${meeting.id}/materiales/${fileId}`, { method: 'DELETE', cookie }), ctx());
+  assert.equal(r.status, 200);
+  assert.equal((await inv(req(`/r/${meeting.id}/material/${fileId}`), ctx({ id: meeting.id, fid: fileId }))).status, 404);
 });
 
 // ---------- Editar y cancelar ----------

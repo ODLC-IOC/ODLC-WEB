@@ -1,9 +1,10 @@
+import crypto from 'node:crypto';
 // /api/* — operaciones privadas del panel. Todas, salvo el acceso y la vuelta de Microsoft, exigen sesión.
 import { json, html, esc, redirect, clientIp, sameOrigin } from '../lib/http.mjs';
 import { ADMIN_EMAIL } from '../lib/config.mjs';
 import { configured, isAuthenticated, login, sessionCookie, clearCookie } from '../lib/auth.mjs';
-import { getJSON, setJSON, listMeetings } from '../lib/store.mjs';
-import { ID_RE, newId, validateInput, adminView, fechaLarga, horaCorta, inviteUrl } from '../lib/meeting.mjs';
+import { getJSON, setJSON, del, setFile, listMeetings } from '../lib/store.mjs';
+import { ID_RE, newId, validateInput, adminView, fechaLarga, horaCorta, inviteUrl, MAX_FILE, MAX_MATERIALS, FILE_TYPES, cleanFileName, isHttpsUrl } from '../lib/meeting.mjs';
 import * as ms from '../lib/graph.mjs';
 
 const notAuth = () => json({ error: 'No autorizado' }, 401);
@@ -76,6 +77,48 @@ export default async (req, context) => {
       }
       await setJSON(`m/${id}`, m);
       return json({ meeting: adminView(m) }, 201);
+    }
+
+    // ----- Materiales: subir archivo, añadir enlace, quitar -----
+    const mt = path.match(/^\/reuniones\/([A-Za-z0-9_-]{22})\/materiales(?:\/([A-Za-z0-9_-]{16}))?$/);
+    if (mt) {
+      const key = `m/${mt[1]}`;
+      const m = await getJSON(key);
+      if (!m) return json({ error: 'Reunión no encontrada' }, 404);
+      const list = m.materials || [];
+      if (!mt[2] && method === 'POST') {
+        if (list.length >= MAX_MATERIALS) return json({ error: `Máximo ${MAX_MATERIALS} materiales por reunión.` }, 422);
+        const fid = crypto.randomBytes(12).toString('base64url');
+        const ctype = (req.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+        let item;
+        if (ctype === 'application/json') {
+          const b = await req.json().catch(() => ({}));
+          const url = String(b.url || '').trim();
+          if (!isHttpsUrl(url)) return json({ error: 'Pega un enlace que empiece por https://' }, 422);
+          item = { id: fid, kind: 'link', name: cleanFileName(b.name || new URL(url).hostname), url };
+        } else {
+          if (!FILE_TYPES[ctype]) return json({ error: 'Tipo de archivo no admitido. Usa PDF, Word, Excel, PowerPoint, imagen, texto o CSV.' }, 415);
+          const len = Number(req.headers.get('content-length') || 0);
+          if (len > MAX_FILE) return json({ error: 'El archivo supera 4 MB. Súbelo a OneDrive o Drive y añade el enlace.' }, 413);
+          const data = await req.arrayBuffer();
+          if (!data.byteLength) return json({ error: 'El archivo está vacío.' }, 422);
+          if (data.byteLength > MAX_FILE) return json({ error: 'El archivo supera 4 MB. Súbelo a OneDrive o Drive y añade el enlace.' }, 413);
+          const name = cleanFileName(decodeURIComponent(req.headers.get('x-file-name') || 'documento'));
+          await setFile(`f/${m.id}/${fid}`, data, { name, type: ctype, size: data.byteLength });
+          item = { id: fid, kind: 'file', name, type: ctype, size: data.byteLength };
+        }
+        const next = { ...m, materials: [...list, item], updatedAt: Date.now() };
+        await setJSON(key, next);
+        return json({ meeting: adminView(next) }, 201);
+      }
+      if (mt[2] && method === 'DELETE') {
+        const item = list.find((x) => x.id === mt[2]);
+        if (!item) return json({ error: 'Material no encontrado' }, 404);
+        if (item.kind === 'file') await del(`f/${m.id}/${item.id}`);
+        const next = { ...m, materials: list.filter((x) => x.id !== mt[2]), updatedAt: Date.now() };
+        await setJSON(key, next);
+        return json({ meeting: adminView(next) });
+      }
     }
 
     const mm = path.match(/^\/reuniones\/([A-Za-z0-9_-]+)(\/cancelar)?$/);

@@ -76,7 +76,10 @@ export function validateInput(body, { requireTeams, allowPast = false } = {}) {
     description: str(body.description, 2000),
     teamsUrl: str(body.teamsUrl, 2000),
     notes: str(body.notes, 2000),
+    // Asistentes por parte de OdlC: uno por línea o separados por comas (por defecto, Isabel)
+    team: str(body.team, 400).split(/[\n,;]+/).map((x) => x.trim()).filter(Boolean).slice(0, 6),
   };
+  if (!data.team.length) data.team = [ODLC.nombre];
   if (!data.subject) errors.subject = 'Escribe el asunto de la reunión.';
   if (data.guestEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.guestEmail)) errors.guestEmail = 'El correo no es válido.';
   if (data.guestPhone) {
@@ -107,6 +110,31 @@ export function estado(m, now = Date.now()) {
   return m.endUtc < now ? 'pasada' : 'proxima';
 }
 
+// ---------- Materiales ----------
+export const MAX_FILE = 4 * 1024 * 1024; // límite de Netlify Functions: 6 MB por petición
+export const MAX_MATERIALS = 8;
+export const FILE_TYPES = {
+  'application/pdf': 'PDF',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word',
+  'application/msword': 'Word',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel',
+  'application/vnd.ms-excel': 'Excel',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PowerPoint',
+  'application/vnd.ms-powerpoint': 'PowerPoint',
+  'image/png': 'Imagen', 'image/jpeg': 'Imagen',
+  'text/plain': 'Texto', 'text/csv': 'CSV',
+};
+export function cleanFileName(n) {
+  return String(n || 'documento').normalize('NFC').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').slice(0, 120) || 'documento';
+}
+export function isHttpsUrl(u) {
+  try { return new URL(u).protocol === 'https:'; } catch { return false; }
+}
+export const materialUrl = (m, f) => `${SITE_URL()}/r/${m.id}/material/${f.id}`;
+export const sizeText = (b) => (b < 1024 * 1024 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB');
+
+export const teamOf = (m) => (m.team && m.team.length ? m.team : [ODLC.nombre]);
+
 export const inviteUrl = (m) => `${SITE_URL()}/r/${m.id}`;
 export const icsUrl = (m) => `${SITE_URL()}/r/${m.id}/calendario.ics`;
 
@@ -114,6 +142,9 @@ export const icsUrl = (m) => `${SITE_URL()}/r/${m.id}/calendario.ics`;
 function calendarBody(m) {
   const lines = [];
   if (m.description) lines.push(m.description, '');
+  lines.push('Por OdlC: ' + teamOf(m).join(', '));
+  if (m.guestName) lines.push('Invitado: ' + m.guestName);
+  lines.push('');
   lines.push('Reunión online por Microsoft Teams.');
   if (m.teamsUrl) lines.push('Unirse a la reunión: ' + m.teamsUrl);
   lines.push('', 'Invitación: ' + inviteUrl(m), '', `${ODLC.nombre} · ${ODLC.empresa}`, ODLC.web);

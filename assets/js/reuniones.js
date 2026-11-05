@@ -64,7 +64,7 @@
 
   function payload() {
     return {
-      mode: form.mode.value, guestName: form.guestName.value, guestEmail: form.guestEmail.value, guestPhone: form.guestPhone.value,
+      mode: form.mode.value, guestName: form.guestName.value, guestEmail: form.guestEmail.value, guestPhone: form.guestPhone.value, team: form.team.value,
       subject: form.subject.value, date: form.date.value, time: form.time.value, duration: Number(form.duration.value),
       teamsUrl: form.teamsUrl.value, description: form.description.value, notes: form.notes.value, sendInvite: form.sendInvite.checked
     };
@@ -89,15 +89,113 @@
     var btn = $('#save'); btn.disabled = true;
     msg(m, p.mode === 'auto' && !current ? 'Creando el evento en Outlook y la reunión de Teams…' : 'Guardando…');
     var req = current ? api('/reuniones/' + current.id, { method: 'PUT', body: p }) : api('/reuniones', { method: 'POST', body: p });
-    req.then(function (d) {
-      msg(m, current ? 'Cambios guardados.' : 'Invitación creada.', 'ok');
-      showResult(d.meeting, !!current); resetForm(true); loadList();
+    var wasEditing = !!current;
+    req.then(function (d) { return uploadMaterials(d.meeting, m); }).then(function (meeting) {
+      msg(m, wasEditing ? 'Cambios guardados.' : 'Invitación creada.', 'ok');
+      showResult(meeting, wasEditing); resetForm(true); loadList();
     }).catch(function (err) { showErrors(err.fields); msg(m, err.message, 'err'); })
       .then(function () { btn.disabled = false; });
   });
 
+  /* ---------- Importar desde Outlook (.ics) y pegar invitación de Teams ---------- */
+  var TEAMS_RE = /https:\/\/(?:[a-z0-9-]+\.)*(?:teams\.microsoft\.com|teams\.live\.com|teams\.cloud\.microsoft)\/[^\s<>"'\\)]+/i;
+  function teamsFrom(text) { var mm = String(text || '').replace(/\\n/g, ' ').match(TEAMS_RE); return mm ? mm[0].replace(/[.,;]+$/, '') : ''; }
+  form.teamsUrl.addEventListener('paste', function () {
+    var input = this; setTimeout(function () { var u = teamsFrom(input.value); if (u && u !== input.value) input.value = u; }, 0);
+  });
+  form.teamsUrl.addEventListener('change', function () { var u = teamsFrom(this.value); if (u) this.value = u; });
+
+  function icsUnescape(v) { return v.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1'); }
+  function parseIcs(text) {
+    var lines = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '').split(/\r?\n/), ev = null, inEv = false;
+    lines.forEach(function (l) {
+      if (l === 'BEGIN:VEVENT' && !ev) { inEv = true; ev = {}; return; }
+      if (l === 'END:VEVENT') { inEv = false; return; }
+      if (!inEv) return;
+      var i = l.indexOf(':'); if (i < 0) return;
+      var head = l.slice(0, i), val = l.slice(i + 1), name = head.split(';')[0].toUpperCase();
+      if (!(name in ev)) ev[name] = { params: head, value: val };
+    });
+    return ev;
+  }
+  // Devuelve la hora de Madrid (AAAA-MM-DD, HH:MM) de un DTSTART/DTEND del .ics
+  function icsToMadrid(p) {
+    var v = p.value, m = v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2}))?/); if (!m) return null;
+    var utc;
+    if (/Z$/.test(v)) utc = Date.UTC(+m[1], m[2] - 1, +m[3], +m[4] || 0, +m[5] || 0);
+    else {
+      var tz = (p.params.match(/TZID=("?)([^;:"]+)\1/i) || [])[2] || 'Europe/Madrid';
+      var iana = /romance|madrid|w\. europe|central europe|paris|brussels/i.test(tz) ? 'Europe/Madrid' : /gmt standard|london|dublin|lisbon/i.test(tz) ? 'Europe/London' : /utc|greenwich/i.test(tz) ? 'UTC' : tz;
+      var naive = Date.UTC(+m[1], m[2] - 1, +m[3], +m[4] || 0, +m[5] || 0);
+      try { utc = naive - offset(naive, iana); utc = naive - offset(utc, iana); } catch (e) { utc = naive - offset(naive, 'Europe/Madrid'); }
+    }
+    var f = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(utc)).reduce(function (o, x) { o[x.type] = x.value; return o; }, {});
+    return { date: f.year + '-' + f.month + '-' + f.day, time: f.hour + ':' + f.minute, utc: utc };
+  }
+  function offset(ms, tz) {
+    var f = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(new Date(ms)).reduce(function (o, x) { o[x.type] = x.value; return o; }, {});
+    return Date.UTC(+f.year, f.month - 1, +f.day, +f.hour % 24, +f.minute, +f.second) - ms;
+  }
+  $('#ics-file').addEventListener('change', function () {
+    var file = this.files[0], input = this, m = $('#form-msg'); if (!file) return;
+    file.text().then(function (text) {
+      var ev = parseIcs(text);
+      if (!ev || !ev.DTSTART) throw new Error('El archivo no contiene una reunión.');
+      var s = icsToMadrid(ev.DTSTART), e = ev.DTEND ? icsToMadrid(ev.DTEND) : null;
+      if (!s) throw new Error('No se ha podido leer la fecha.');
+      if (ev.SUMMARY) form.subject.value = icsUnescape(ev.SUMMARY.value).slice(0, 160);
+      form.date.value = s.date; form.time.value = s.time;
+      if (e) {
+        var mins = Math.round((e.utc - s.utc) / 60000), opts = [15, 30, 45, 60, 90];
+        form.duration.value = String(opts.reduce(function (a, b) { return Math.abs(b - mins) < Math.abs(a - mins) ? b : a; }));
+      }
+      var link = teamsFrom((ev['X-MICROSOFT-SKYPETEAMSMEETINGURL'] || {}).value) || teamsFrom((ev.LOCATION || {}).value) || teamsFrom((ev.URL || {}).value) || teamsFrom((ev.DESCRIPTION || {}).value) || teamsFrom(text);
+      if (link) { $('input[name=mode][value=manual]').checked = true; syncMode(); form.teamsUrl.value = link; }
+      if (ev.DESCRIPTION && !form.description.value) {
+        var d = icsUnescape(ev.DESCRIPTION.value).split(/_{10,}|Reunión de Microsoft Teams|Microsoft Teams meeting/i)[0].trim();
+        if (d) form.description.value = d.slice(0, 2000);
+      }
+      msg(m, 'Reunión importada de Outlook' + (link ? ' con su enlace de Teams' : ' (no se ha encontrado enlace de Teams: pégalo a mano)') + '. Revisa los datos y pulsa Crear invitación.', link ? 'ok' : 'err');
+    }).catch(function (err) { msg(m, err.message || 'No se ha podido leer el archivo.', 'err'); })
+      .then(function () { input.value = ''; });
+  });
+
+  /* ---------- Materiales ---------- */
+  var fileInput = $('#files'), matsEl = $('#mats');
+  function fmtSize(b) { return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1).replace('.', ',') + ' MB'; }
+  function renderMats() {
+    matsEl.innerHTML = '';
+    (current && current.materials || []).forEach(function (f) {
+      var li = el('li'); li.appendChild(el('span', null, (f.kind === 'link' ? 'Enlace · ' : '') + f.name + (f.size ? ' · ' + fmtSize(f.size) : '')));
+      li.appendChild(btn('Quitar', 'x', function () {
+        api('/reuniones/' + current.id + '/materiales/' + f.id, { method: 'DELETE' }).then(function (d) { current.materials = d.meeting.materials; renderMats(); loadList(); })
+          .catch(function (e) { msg($('#form-msg'), e.message, 'err'); });
+      }));
+      li.lastChild.className = ''; matsEl.appendChild(li);
+    });
+    Array.prototype.forEach.call(fileInput.files, function (f) {
+      var li = el('li'); li.appendChild(el('span', null, f.name + ' · ' + fmtSize(f.size) + (f.size > 4194304 ? ' · supera 4 MB' : ' · se subirá al guardar'))); matsEl.appendChild(li);
+    });
+  }
+  fileInput.addEventListener('change', renderMats);
+  function uploadMaterials(meeting, m) {
+    var files = Array.prototype.slice.call(fileInput.files), url = $('#mat-url').value.trim(), name = $('#mat-name').value.trim();
+    var chain = Promise.resolve(meeting), errors = [];
+    files.forEach(function (f, i) {
+      chain = chain.then(function (cur) {
+        msg(m, 'Subiendo material ' + (i + 1) + ' de ' + files.length + '…');
+        return fetch('/api/reuniones/' + meeting.id + '/materiales', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': f.type || 'application/octet-stream', 'X-File-Name': encodeURIComponent(f.name) }, body: f })
+          .then(function (r) { return r.json().then(function (d) { if (!r.ok) { errors.push(f.name + ': ' + (d.error || r.status)); return cur; } return d.meeting; }); });
+      });
+    });
+    if (url) chain = chain.then(function (cur) {
+      return api('/reuniones/' + meeting.id + '/materiales', { method: 'POST', body: { url: url, name: name } }).catch(function (e) { errors.push(e.message); return { meeting: cur }; }).then(function (d) { return d.meeting || cur; });
+    });
+    return chain.then(function (cur) { if (errors.length) setTimeout(function () { msg($('#result-msg'), 'No se han podido añadir: ' + errors.join(' · '), 'err'); }, 50); return cur; });
+  }
+
   function resetForm(keepMsg) {
-    current = null; form.reset(); form.id.value = ''; clearErrors();
+    current = null; form.reset(); form.id.value = ''; form.team.value = form.team.dataset.default; clearErrors(); fileInput.value = ''; renderMats();
     $('#form-title').textContent = 'Nueva reunión'; $('#save').textContent = 'Crear invitación'; $('#cancel-edit').hidden = true;
     if (!keepMsg) msg($('#form-msg'), '');
     syncMode();
@@ -109,8 +207,10 @@
     form.id.value = m.id;
     $$('input[name=mode]').forEach(function (r) { r.checked = r.value === m.mode; });
     ['guestName', 'guestEmail', 'guestPhone', 'subject', 'teamsUrl', 'description', 'notes'].forEach(function (k) { form[k].value = m[k] || ''; });
+    form.team.value = (m.team && m.team.length ? m.team : [form.team.dataset.default]).join('\n');
     form.date.value = m.local.date; form.time.value = m.local.time; form.duration.value = String(m.duration);
     form.date.removeAttribute('min');
+    fileInput.value = ''; renderMats();
     $('#form-title').textContent = 'Editar reunión'; $('#save').textContent = 'Guardar cambios'; $('#cancel-edit').hidden = false;
     syncMode();
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -170,6 +270,7 @@
       row.appendChild(el('p', null, m.subject));
       row.appendChild(el('p', null, m.fecha + ' · ' + m.hora + '–' + m.horaFin + ' h (Madrid) · ' + m.duration + ' min · ' + (m.mode === 'auto' ? 'Outlook + Teams' : 'Enlace manual')));
       if (m.notes) row.appendChild(el('p', null, 'Notas: ' + m.notes));
+      if (m.materials && m.materials.length) row.appendChild(el('p', null, 'Materiales: ' + m.materials.map(function (f) { return f.name; }).join(', ')));
       var a = el('div', 'p-actions');
       a.appendChild(link('Abrir invitación', m.url));
       a.appendChild(btn('Copiar enlace', 'ghost', function () { copy(m.url, rowMsg); }));

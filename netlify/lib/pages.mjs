@@ -1,7 +1,7 @@
 // HTML generado en el servidor: invitación pública, página no encontrada, acceso y panel privado.
 import { esc } from './http.mjs';
 import { ODLC, SITE_URL } from './config.mjs';
-import { fechaLarga, horaCorta, zonaTexto, calendarLinks, estado } from './meeting.mjs';
+import { fechaLarga, horaCorta, zonaTexto, calendarLinks, estado, teamOf, materialUrl, sizeText, FILE_TYPES } from './meeting.mjs';
 
 const V = '20261105';
 
@@ -57,6 +57,17 @@ function cardShell(inner, kicker = 'Invitación a reunión') {
 </html>`;
 }
 
+const hostOf = (u) => { try { return new URL(u).hostname; } catch { return ''; } };
+
+function materials(m, st) {
+  const list = st === 'cancelada' ? [] : m.materials || [];
+  if (!list.length) return '';
+  const items = list.map((f) => f.kind === 'link'
+    ? `<li><a href="${esc(f.url)}" target="_blank" rel="noopener noreferrer"><span class="r-mt">${/(sharepoint\.com|onedrive\.live\.com|1drv\.ms)$/i.test(hostOf(f.url)) ? 'OneDrive' : 'Enlace'}</span><span class="r-mn">${esc(f.name)}</span></a></li>`
+    : `<li><a href="${esc(materialUrl(m, f))}" download><span class="r-mt">${esc(FILE_TYPES[f.type] || 'Archivo')}</span><span class="r-mn">${esc(f.name)}</span><span class="r-ms">${sizeText(f.size)}</span></a></li>`).join('');
+  return `<section class="r-mat" aria-label="Materiales"><h2>Materiales</h2><ul>${items}</ul></section>`;
+}
+
 export function invitationPage(m) {
   const st = estado(m);
   const links = calendarLinks(m);
@@ -88,7 +99,7 @@ export function invitationPage(m) {
     ${status}
     <p class="r-eyebrow">Reunión con OdlC</p>
     <h1 class="r-title">${esc(m.subject)}</h1>
-    <p class="r-guest">${esc(ODLC.nombre)}${m.guestName ? ` · para ${esc(m.guestName)}` : ''}</p>
+    <p class="r-guest">${teamOf(m).map(esc).join(' · ')}${m.guestName ? `<br>para ${esc(m.guestName)}` : ''}</p>
     <dl class="r-grid">
       <div><dt>Fecha</dt><dd>${esc(fecha)}</dd><dd class="r-s">${esc(dia)}</dd></div>
       <div><dt>Hora</dt><dd>${esc(horaCorta(m.startUtc))} h</dd><dd class="r-s">hasta las ${esc(horaCorta(m.endUtc))}</dd></div>
@@ -96,6 +107,7 @@ export function invitationPage(m) {
       <div><dt>Duración</dt><dd>${m.duration} min</dd><dd class="r-s">Microsoft Teams</dd></div>
     </dl>
     ${m.description ? `<p class="r-desc">${esc(m.description).replace(/\n/g, '<br>')}</p>` : ''}
+    ${materials(m, st)}
     ${join}
     ${cal}`;
   return head({
@@ -174,8 +186,14 @@ export function panelPage() {
         <label><input type="radio" name="mode" value="manual" checked><span><b>Pegar enlace de Teams</b>Creo la reunión en Outlook o Teams y pego aquí su enlace.</span></label>
         <label><input type="radio" name="mode" value="auto" id="mode-auto"><span><b>Crear en Outlook y Teams</b>El sistema crea el evento en mi calendario y trae el enlace real.</span></label>
       </div>
+      <div class="p-import" id="import-box">
+        <label class="p-btn ghost" for="ics-file">Importar reunión de Outlook (.ics)</label>
+        <input id="ics-file" type="file" accept=".ics,text/calendar" hidden>
+        <small>En Outlook: abre la reunión → Archivo → Guardar como → Formato iCalendar (.ics), o arrástrala al escritorio. Se rellenan asunto, fecha, hora, duración, enlace de Teams y descripción.</small>
+      </div>
       <div class="p-grid" style="margin-top:18px">
-        <div class="p-field"><label for="guestName">Nombre del invitado</label><input id="guestName" name="guestName" maxlength="120" autocomplete="off"><small>Aparece en el saludo y en la invitación.</small></div>
+        <div class="p-field"><label for="guestName">Nombre del invitado</label><input id="guestName" name="guestName" maxlength="120" autocomplete="off"><small>Aparece en el saludo y en la invitación. Si son varios: «María y Juan».</small></div>
+        <div class="p-field"><label for="team">Asistentes de OdlC</label><textarea id="team" name="team" rows="2" maxlength="400" data-default="Isabel Olivares de la Cerda">Isabel Olivares de la Cerda</textarea><small>Uno por línea. Aparecen en la invitación y en el calendario.</small></div>
         <div class="p-field"><label for="guestEmail">Correo del invitado</label><input id="guestEmail" name="guestEmail" type="email" maxlength="160" autocomplete="off"><small>Opcional si solo lo envías por WhatsApp. No aparece en la invitación.</small></div>
         <div class="p-field"><label for="guestPhone">Móvil del invitado</label><input id="guestPhone" name="guestPhone" type="tel" maxlength="30" autocomplete="off" placeholder="+34 600 000 000"><small>Opcional: abre WhatsApp directamente en su chat.</small></div>
         <div class="p-field"><label for="subject">Asunto *</label><input id="subject" name="subject" maxlength="160" required></div>
@@ -183,9 +201,12 @@ export function panelPage() {
         <div class="p-field"><label for="time">Hora *</label><input id="time" name="time" type="time" step="300" required></div>
         <div class="p-field"><label for="duration">Duración *</label><select id="duration" name="duration"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="45">45 minutos</option><option value="60" selected>60 minutos</option><option value="90">90 minutos</option></select></div>
         <div class="p-field"><label for="tz">Zona horaria</label><input id="tz" value="Europe/Madrid (Madrid)" readonly></div>
-        <div class="p-field full" id="teams-field"><label for="teamsUrl">Enlace de Microsoft Teams *</label><input id="teamsUrl" name="teamsUrl" type="url" inputmode="url" placeholder="https://teams.microsoft.com/l/meetup-join/…"></div>
+        <div class="p-field full" id="teams-field"><label for="teamsUrl">Enlace de Microsoft Teams *</label><input id="teamsUrl" name="teamsUrl" type="url" inputmode="url" placeholder="https://teams.microsoft.com/l/meetup-join/…"><small>Puedes pegar el texto entero de la invitación de Teams: se extrae el enlace solo.</small></div>
         <div class="p-field full" id="invite-field" hidden><label><input type="checkbox" name="sendInvite" style="width:auto;margin-right:8px">Enviar también la convocatoria de Outlook al correo del invitado</label></div>
         <div class="p-field full"><label for="description">Descripción para el invitado</label><textarea id="description" name="description" maxlength="2000"></textarea><small>Aparece en la invitación y en su calendario. No escribas información confidencial.</small></div>
+        <div class="p-field full"><label for="files">Materiales para la reunión</label><input id="files" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.txt,.csv"><small>PDF, Word, Excel, PowerPoint o imágenes, hasta 4 MB cada uno. El invitado los descarga desde la invitación.</small>
+          <div class="p-linkrow"><input id="mat-url" type="url" placeholder="O pega un enlace de OneDrive o SharePoint: siempre verán la última versión"><input id="mat-name" placeholder="Nombre (opcional)"></div>
+          <ul class="p-mats" id="mats"></ul></div>
         <div class="p-field full"><label for="notes">Notas privadas</label><textarea id="notes" name="notes" maxlength="2000"></textarea><small>Solo las ves tú en este panel.</small></div>
       </div>
       <div class="p-actions"><button class="p-btn" type="submit" id="save">Crear invitación</button><button class="p-btn ghost" type="button" id="cancel-edit" hidden>Cancelar edición</button></div>
