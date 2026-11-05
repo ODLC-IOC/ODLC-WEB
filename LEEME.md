@@ -113,33 +113,38 @@ Hostinger copia la rama `main` de GitHub en `public_html` (webhook). El subdomin
 
 ### Datos y claves
 
-En `public_html/_datos/` (fuera de Git, bloqueado con `.htaccess`): `config.php` con las claves, y las reuniones, materiales y conexión con Microsoft. `config.php`:
+En `public_html/_datos/` (fuera de Git, bloqueado con `.htaccess`): `config.php` con las claves, la lista de personas autorizadas, las reuniones, los materiales y la conexión con Microsoft. `config.php`:
 
 ```php
 <?php return [
-  'admin_email' => 'isabel@odlc.es',
-  'password_hash' => '…',      // password_hash() de PHP, nunca la contraseña
-  'session_secret' => '…',     // 64 caracteres aleatorios
-  'token_key' => '…',          // 32 bytes en base64 (cifra el token de Microsoft)
+  'admin_email' => 'isabel@odlc.es',   // administradora: siempre autorizada
+  'session_secret' => '…',              // 64 caracteres aleatorios
+  'token_key' => '…',                   // 32 bytes en base64 (cifra el token del calendario)
   'site_url' => 'https://citas.odlc.es',
-  'ms_tenant_id' => '', 'ms_client_id' => '', 'ms_client_secret' => '',
-  'auto_bookings' => true,     // convertir solas las reservas de Bookings
+  'ms_tenant_id' => '…', 'ms_client_id' => '…', 'ms_client_secret' => '…',
+  'auto_bookings' => true,              // convertir solas las reservas de Bookings
 ];
 ```
 
-Para cambiar la contraseña: `php -r 'echo password_hash("NUEVA", PASSWORD_DEFAULT);'` y sustituir `password_hash` (Administrador de archivos de Hostinger).
+### Acceso al panel: sin contraseñas
+
+- Solo **«Iniciar sesión con Microsoft»**, con el directorio de Microsoft 365 de OdlC (inquilino propio): cuentas @odlc.es o personas invitadas a ese Microsoft 365.
+- Además, la cuenta tiene que estar en **Personas autorizadas** (sección del panel que solo ve la administradora). isabel@odlc.es está siempre; el resto se añade o se quita desde ahí. Al quitar a alguien, su sesión deja de valer en ese momento.
+- Se identifica a cada persona por su nombre de inicio de sesión en el directorio de OdlC (`preferred_username`), comprobando inquilino (`tid`), emisor, destinatario, caducidad y `nonce`; nunca por el campo «email», que otras organizaciones pueden rellenar a su gusto.
+- Solo la administradora puede conectar el calendario y gestionar accesos.
 
 ### Seguridad
 
-Contraseña solo como hash; sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, firmada, de 8 horas; bloqueo de 15 minutos tras 5 fallos; peticiones que cambian datos solo desde el propio sitio. Identificadores de 128 bits. La invitación nunca muestra correo, móvil ni notas privadas. Token de Microsoft cifrado con libsodium. Reservas: casilla de privacidad, campo trampa contra robots y máximo 4 reservas por hora e IP.
+Sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, firmada, de 8 horas; peticiones que cambian datos solo desde el propio sitio; OAuth 2.0 con PKCE, `state` de un solo uso y `nonce`. Identificadores de 128 bits. La invitación nunca muestra correo, móvil ni notas privadas. Token del calendario cifrado con libsodium. Reservas: casilla de privacidad, campo trampa contra robots y máximo 4 reservas por hora e IP.
 
 ### Microsoft 365: registrar la aplicación en Microsoft Entra ID
 
-1. https://entra.microsoft.com → **Identity → Applications → App registrations → New registration**. Nombre `OdlC Citas`; *Single tenant*; Redirect URI **Web** `https://citas.odlc.es/api/ms/callback`.
+1. https://entra.microsoft.com (con isabel@odlc.es como administradora) → **Identity → Applications → App registrations → New registration**. Nombre `OdlC Citas`; *Accounts in this organizational directory only (Single tenant)*; Redirect URI **Web** `https://citas.odlc.es/api/ms/callback`.
 2. Copiar *Application (client) ID* → `ms_client_id` y *Directory (tenant) ID* → `ms_tenant_id`.
 3. **Certificates & secrets → New client secret** (24 meses) → copiar el **Value** → `ms_client_secret`. Apuntar su renovación.
-4. **API permissions → Microsoft Graph → Delegated**: `openid`, `offline_access`, `User.Read`, `Calendars.ReadWrite` → **Grant admin consent**.
-5. En el panel: **Conectar con Microsoft 365** con isabel@odlc.es. Se comprueba que el calendario admite Teams y solo se acepta esa cuenta.
+4. **API permissions → Microsoft Graph → Delegated**: `openid`, `profile`, `email`, `offline_access`, `User.Read`, `Calendars.ReadWrite` → **Grant admin consent for OdlC**.
+5. Entrar en `citas.odlc.es/panel` → **Iniciar sesión con Microsoft** → **Conectar con Microsoft 365** (calendario). Se comprueba que el calendario admite Teams y solo se acepta isabel@odlc.es.
+6. Para dar acceso a alguien de fuera: en Microsoft 365, invitarle como invitado (Entra ID → Users → Invite external user) y añadir su correo en **Personas autorizadas**.
 
 ### Qué hace la conexión
 
@@ -149,4 +154,4 @@ Contraseña solo como hash; sesión en cookie `HttpOnly`, `Secure`, `SameSite=St
 
 ### Pruebas
 
-`citas-app/pruebas/`: servidor PHP local, Microsoft simulado y 20 comprobaciones de extremo a extremo (todas superadas el 05/11/2026).
+`citas-app/pruebas/`: servidor PHP local, Microsoft simulado y comprobaciones de extremo a extremo (25 comprobaciones, todas superadas el 05/11/2026, incluido el rechazo de cuentas no autorizadas).

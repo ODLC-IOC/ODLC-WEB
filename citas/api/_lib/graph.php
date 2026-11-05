@@ -16,6 +16,8 @@ function ms_missing(): array {
     return $m;
 }
 function graph_base(): string { return rtrim((string)cfg('graph_base', 'https://graph.microsoft.com/v1.0'), '/'); }
+// Solo el directorio de Microsoft 365 de OdlC (su inquilino): ahí la identidad de cada cuenta la controla OdlC.
+// Las personas de fuera entran como invitadas de ese directorio. Además, deben estar en la lista de autorizados.
 function authority(): string { return rtrim((string)cfg('login_base', 'https://login.microsoftonline.com'), '/') . '/' . rawurlencode((string)cfg('ms_tenant_id')) . '/oauth2/v2.0'; }
 function redirect_uri(): string { return (string)cfg('ms_redirect_uri', site_url() . '/api/ms/callback'); }
 
@@ -39,30 +41,56 @@ function http_req(string $method, string $url, array $headers = [], ?string $bod
     return [$code, json_decode((string)$res, true) ?? []];
 }
 
-function token_request(array $params): array {
+function token_request(array $params, string $scope = SCOPES): array {
     [$code, $d] = http_req('POST', authority() . '/token', ['Content-Type: application/x-www-form-urlencoded'],
-        http_build_query(['client_id' => cfg('ms_client_id'), 'client_secret' => cfg('ms_client_secret'), 'scope' => SCOPES] + $params));
+        http_build_query(['client_id' => cfg('ms_client_id'), 'client_secret' => cfg('ms_client_secret'), 'scope' => $scope] + $params));
     if ($code >= 400) { $e = new GraphError($d['error_description'] ?? ($d['error'] ?? "Error $code al obtener el token")); throw $e; }
     return $d;
 }
 
-function ms_authorize_url(): string {
+const LOGIN_SCOPES = 'openid profile email';
+
+// purpose: 'login' (iniciar sesión en el panel) o 'calendar' (conectar el calendario de la administradora)
+function ms_authorize_url(string $purpose = 'calendar'): string {
     $state = b64u(random_bytes(24));
     $verifier = b64u(random_bytes(48));
-    set_json('ms/state-' . $state, ['verifier' => $verifier, 'exp' => time() + 600]);
-    return authority() . '/authorize?' . http_build_query([
-        'client_id' => cfg('ms_client_id'), 'response_type' => 'code', 'redirect_uri' => redirect_uri(), 'response_mode' => 'query',
-        'scope' => SCOPES, 'state' => $state, 'code_challenge' => b64u(hash('sha256', $verifier, true)), 'code_challenge_method' => 'S256',
-        'login_hint' => admin_email(), 'prompt' => 'select_account',
-    ]);
+    $nonce = b64u(random_bytes(16));
+    set_json('ms/state-' . $state, ['verifier' => $verifier, 'nonce' => $nonce, 'purpose' => $purpose, 'exp' => time() + 600]);
+    $q = ['client_id' => cfg('ms_client_id'), 'response_type' => 'code', 'redirect_uri' => redirect_uri(), 'response_mode' => 'query',
+        'scope' => $purpose === 'login' ? LOGIN_SCOPES : SCOPES, 'state' => $state, 'nonce' => $nonce,
+        'code_challenge' => b64u(hash('sha256', $verifier, true)), 'code_challenge_method' => 'S256', 'prompt' => 'select_account'];
+    if ($purpose === 'calendar') $q['login_hint'] = admin_email();
+    return authority() . '/authorize?' . http_build_query($q);
 }
 
+// Comprueba el id_token recibido directamente de Microsoft por TLS (OpenID Connect, intercambio de código en servidor)
+function id_token_email(string $jwt, string $nonce): string {
+    $parts = explode('.', $jwt);
+    $c = count($parts) === 3 ? json_decode(b64u_dec($parts[1]), true) : null;
+    if (!is_array($c)) throw new GraphError('Respuesta de Microsoft no válida.');
+    if (($c['aud'] ?? '') !== cfg('ms_client_id')) throw new GraphError('El token no es para esta aplicación.');
+    if (($c['exp'] ?? 0) < time() - 60) throw new GraphError('El inicio de sesión ha caducado.');
+    if (!hash_equals($nonce, (string)($c['nonce'] ?? ''))) throw new GraphError('El inicio de sesión no es válido.');
+    $tenant = strtolower((string)cfg('ms_tenant_id'));
+    if (strtolower((string)($c['tid'] ?? '')) !== $tenant) throw new GraphError('La cuenta no pertenece al directorio de OdlC.');
+    if (!cfg('login_base') && strtolower((string)($c['iss'] ?? '')) !== "https://login.microsoftonline.com/$tenant/v2.0") throw new GraphError('Emisor del token no reconocido.');
+    // preferred_username = nombre de inicio de sesión en el directorio de OdlC (no se usa el claim «email», que no está verificado)
+    return strtolower(trim((string)($c['preferred_username'] ?? '')));
+}
+
+// Resultado: ['purpose' => 'login', 'email' => …] o ['purpose' => 'calendar', 'account' => …]
 function ms_callback(array $q): array {
     if (!empty($q['error'])) throw new GraphError($q['error_description'] ?? $q['error']);
     $state = (string)($q['state'] ?? ''); $code = (string)($q['code'] ?? '');
     if (!preg_match('/^[A-Za-z0-9_-]{32}$/', $state) || $code === '') throw new GraphError('Respuesta de Microsoft incompleta.');
     $p = get_json('ms/state-' . $state); del_key('ms/state-' . $state);
     if (!$p || $p['exp'] < time()) throw new GraphError('La autorización ha caducado. Vuelve a intentarlo.');
+    if (($p['purpose'] ?? '') === 'login') {
+        $tok = token_request(['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => redirect_uri(), 'code_verifier' => $p['verifier']], LOGIN_SCOPES);
+        $email = id_token_email((string)($tok['id_token'] ?? ''), $p['nonce']);
+        if (!isset(users()[$email])) throw new GraphError("La cuenta $email no está autorizada. Pide a " . ODLC_NOMBRE . ' que te dé acceso.');
+        return ['purpose' => 'login', 'email' => $email];
+    }
     $tok = token_request(['grant_type' => 'authorization_code', 'code' => $code, 'redirect_uri' => redirect_uri(), 'code_verifier' => $p['verifier']]);
     $me = graph('GET', '/me?$select=displayName,mail,userPrincipalName', null, $tok['access_token']);
     $acc = strtolower((string)($me['mail'] ?? $me['userPrincipalName'] ?? ''));
@@ -70,7 +98,7 @@ function ms_callback(array $q): array {
     $cal = graph('GET', '/me/calendar?$select=allowedOnlineMeetingProviders', null, $tok['access_token']);
     $prov = $cal['allowedOnlineMeetingProviders'] ?? [];
     set_json('ms/token', ['refresh' => enc($tok['refresh_token']), 'account' => $acc, 'providers' => $prov, 'teams' => in_array('teamsForBusiness', $prov, true), 'connectedAt' => time() * 1000]);
-    return ['account' => $acc];
+    return ['purpose' => 'calendar', 'account' => $acc];
 }
 
 function ms_status(): array {

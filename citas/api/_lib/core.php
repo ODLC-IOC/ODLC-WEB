@@ -106,42 +106,43 @@ function body_json(): array {
 function b64u(string $s): string { return rtrim(strtr(base64_encode($s), '+/', '-_'), '='); }
 function b64u_dec(string $s): string { return (string)base64_decode(strtr($s, '-_', '+/')); }
 
-// ---------- Acceso ----------
+// ---------- Acceso (solo con cuenta de Microsoft autorizada) ----------
+// No hay contraseñas: se entra con «Iniciar sesión con Microsoft» y solo si el correo está en la lista de autorizados.
 const COOKIE = '__Host-odlc_s';
 const SESSION_HOURS = 8;
 
 function missing_config(): array {
     $m = [];
-    if (!str_starts_with((string)cfg('password_hash'), '$')) $m[] = 'password_hash';
     if (strlen((string)cfg('session_secret')) < 32) $m[] = 'session_secret';
+    foreach (['ms_tenant_id', 'ms_client_id', 'ms_client_secret'] as $k) if (cfg($k) === '') $m[] = $k;
     return $m;
 }
 function sign(string $v): string { return b64u(hash_hmac('sha256', $v, (string)cfg('session_secret'), true)); }
 
-function session_cookie(): string {
-    $payload = b64u(json_encode(['u' => admin_email(), 'exp' => (time() + SESSION_HOURS * 3600) * 1000, 'n' => b64u(random_bytes(9))]));
+// Usuarios autorizados: la administradora siempre; el resto los añade ella desde el panel
+function users(): array {
+    $list = get_json('usuarios')['usuarios'] ?? [];
+    $out = [admin_email() => ['email' => admin_email(), 'nombre' => ODLC_NOMBRE, 'admin' => true]];
+    foreach ($list as $u) { $e = strtolower(trim((string)($u['email'] ?? ''))); if ($e && !isset($out[$e])) $out[$e] = ['email' => $e, 'nombre' => (string)($u['nombre'] ?? ''), 'admin' => false, 'alta' => $u['alta'] ?? null]; }
+    return $out;
+}
+function save_users(array $list): void {
+    set_json('usuarios', ['usuarios' => array_values(array_filter($list, fn($u) => $u['email'] !== admin_email()))]);
+}
+
+function session_cookie(string $email): string {
+    $payload = b64u(json_encode(['u' => $email, 'exp' => (time() + SESSION_HOURS * 3600) * 1000, 'n' => b64u(random_bytes(9))]));
     return COOKIE . '=' . $payload . '.' . sign($payload) . '; Path=/; Max-Age=' . (SESSION_HOURS * 3600) . '; HttpOnly; Secure; SameSite=Strict';
 }
 function clear_cookie(): string { return COOKIE . '=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict'; }
 
-function is_authenticated(): bool {
-    if (missing_config()) return false;
-    $raw = $_COOKIE[COOKIE] ?? '';
-    $parts = explode('.', $raw);
-    if (count($parts) !== 2 || !hash_equals(sign($parts[0]), $parts[1])) return false;
+// Devuelve el usuario con sesión válida (y que siga autorizado) o null
+function current_user(): ?array {
+    if (missing_config()) return null;
+    $parts = explode('.', $_COOKIE[COOKIE] ?? '');
+    if (count($parts) !== 2 || !hash_equals(sign($parts[0]), $parts[1])) return null;
     $d = json_decode(b64u_dec($parts[0]), true);
-    return is_array($d) && ($d['u'] ?? '') === admin_email() && ($d['exp'] ?? 0) > time() * 1000;
+    if (!is_array($d) || ($d['exp'] ?? 0) <= time() * 1000) return null;
+    return users()[strtolower((string)($d['u'] ?? ''))] ?? null;
 }
-
-function do_login(string $email, string $password): array {
-    $key = 'rl/' . substr(hash('sha256', client_ip()), 0, 32);
-    $rl = get_json($key) ?? ['fails' => 0, 'until' => 0];
-    if ($rl['until'] > time()) return ['ok' => false, 'locked' => true];
-    $emailOk = hash_equals(admin_email(), strtolower(trim($email)));
-    $passOk = password_verify(Normalizer::normalize($password, Normalizer::FORM_C) ?: $password, (string)cfg('password_hash'));
-    if ($emailOk && $passOk) { del_key($key); return ['ok' => true]; }
-    $fails = $rl['fails'] + 1;
-    set_json($key, ['fails' => $fails >= 5 ? 0 : $fails, 'until' => $fails >= 5 ? time() + 900 : 0]);
-    usleep(300000);
-    return ['ok' => false, 'locked' => $fails >= 5];
-}
+function is_authenticated(): bool { return current_user() !== null; }

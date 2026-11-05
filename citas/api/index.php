@@ -60,35 +60,55 @@ try {
         send_json(['id' => $id, 'url' => invite_url($m)], 201);
     }
 
-    // ===== Acceso =====
-    if ($path === '/login' && $method === 'POST') {
-        if (missing_config()) send_json(['error' => 'El acceso no está configurado en el servidor.'], 503);
-        if (!same_origin()) send_json(['error' => 'Origen no permitido'], 403);
-        $b = body_json();
-        $r = do_login((string)($b['email'] ?? ''), (string)($b['password'] ?? ''));
-        if ($r['ok']) { header('Set-Cookie: ' . session_cookie()); send_json(['ok' => true]); }
-        send_json(['error' => $r['locked'] ? 'Demasiados intentos. Espera 15 minutos.' : 'Correo o contraseña incorrectos.'], $r['locked'] ? 429 : 401);
+    // ===== Acceso: solo «Iniciar sesión con Microsoft» y solo cuentas autorizadas =====
+    if ($path === '/entrar' && $method === 'GET') {
+        if (missing_config()) { header('Location: /panel?acceso=error&detalle=' . rawurlencode('El acceso con Microsoft aún no está configurado.'), true, 303); exit; }
+        header('Location: ' . ms_authorize_url('login'), true, 303); exit;
     }
     if ($path === '/logout' && $method === 'POST') { header('Set-Cookie: ' . clear_cookie()); send_json(['ok' => true]); }
 
-    // Vuelta desde Microsoft (la cookie SameSite=Strict no viaja aquí: la protege el «state» de un solo uso + PKCE + cuenta permitida)
+    // Vuelta desde Microsoft (inicio de sesión o conexión del calendario).
+    // La cookie SameSite=Strict no viaja en esta redirección: la protegen el «state» de un solo uso, PKCE y el nonce.
     if ($path === '/ms/callback' && $method === 'GET') {
-        $target = '/panel?ms=ok';
-        try { ms_callback($_GET); } catch (Throwable $e) { $target = '/panel?ms=error&detalle=' . rawurlencode(mb_substr($e->getMessage(), 0, 250)); }
+        $target = '/panel';
+        try {
+            $r = ms_callback($_GET);
+            if ($r['purpose'] === 'login') header('Set-Cookie: ' . session_cookie($r['email']));
+            else $target = '/panel?ms=ok';
+        } catch (Throwable $e) { $target = '/panel?acceso=error&detalle=' . rawurlencode(mb_substr($e->getMessage(), 0, 250)); }
         send_html('<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=' . esc($target) . '"><title>OdlC</title><p style="font-family:sans-serif">Volviendo al panel… <a href="' . esc($target) . '">Continuar</a></p>');
     }
 
     // ===== Privado =====
-    if (!is_authenticated()) send_json(['error' => 'No autorizado', 'missing' => missing_config()], 401);
+    $user = current_user();
+    if (!$user) send_json(['error' => 'No autorizado', 'missing' => missing_config()], 401);
     if ($method !== 'GET' && !same_origin()) send_json(['error' => 'Origen no permitido'], 403);
 
-    if ($path === '/session') send_json(['ok' => true, 'user' => admin_email()]);
+    if ($path === '/session') send_json(['ok' => true, 'user' => $user]);
+
+    // Lista de personas autorizadas (solo la administradora la gestiona)
+    if ($path === '/usuarios' && $method === 'GET') send_json(['usuarios' => array_values(users())]);
+    if (str_starts_with($path, '/usuarios') && empty($user['admin'])) send_json(['error' => 'Solo la administradora puede cambiar los accesos.'], 403);
+    if ($path === '/usuarios' && $method === 'POST') {
+        $b = body_json(); $email = strtolower(trim((string)($b['email'] ?? '')));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) send_json(['error' => 'Escribe el correo de su cuenta de Microsoft.'], 422);
+        $all = users(); $all[$email] = ['email' => $email, 'nombre' => clean_str($b['nombre'] ?? '', 120), 'admin' => false, 'alta' => time() * 1000];
+        save_users($all);
+        send_json(['usuarios' => array_values(users())], 201);
+    }
+    if (preg_match('#^/usuarios/(.+)$#', $path, $x) && $method === 'DELETE') {
+        $email = strtolower(rawurldecode($x[1]));
+        if ($email === admin_email()) send_json(['error' => 'La administradora no se puede quitar.'], 422);
+        $all = users(); unset($all[$email]); save_users($all);
+        send_json(['usuarios' => array_values(users())]);
+    }
     if ($path === '/ms/estado') send_json(ms_status() + ['adminEmail' => admin_email(), 'autoBookings' => (bool)cfg('auto_bookings', true)]);
     if ($path === '/ms/conectar' && $method === 'GET') {
+        if (empty($user['admin'])) { header('Location: /panel', true, 303); exit; }
         if (ms_missing()) { header('Location: /panel?ms=error&detalle=' . rawurlencode('Faltan las claves de Microsoft Entra ID.')); exit; }
         header('Location: ' . ms_authorize_url(), true, 303); exit;
     }
-    if ($path === '/ms/desconectar' && $method === 'POST') { del_key('ms/token'); send_json(['ok' => true]); }
+    if ($path === '/ms/desconectar' && $method === 'POST') { if (empty($user['admin'])) send_json(['error' => 'Solo la administradora.'], 403); del_key('ms/token'); send_json(['ok' => true]); }
 
     // Eventos de Outlook y Bookings
     if ($path === '/outlook/eventos' && $method === 'GET') { $n = sync_bookings(); send_json(['events' => outlook_events(), 'importadas' => $n]); }

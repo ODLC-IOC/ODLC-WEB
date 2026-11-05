@@ -13,34 +13,27 @@ function Top({ label, onLogout }) {
   return <header className="p-top"><div className="wrap"><img src={LOGO_CLARO} alt="OdlC" width="96" height="31" /><span>{label}</span>{onLogout && <button type="button" onClick={onLogout}>Salir</button>}</div></header>;
 }
 
-function Login({ onOk }) {
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
-  const [msg, setMsg] = useState(''); const [busy, setBusy] = useState(false);
-  async function submit(e) {
-    e.preventDefault(); setBusy(true); setMsg('');
-    try { await api('/login', { method: 'POST', body: { email, password } }); onOk(); } catch (err) { setMsg(err.message); }
-    setBusy(false);
-  }
+function Login() {
+  const q = new URLSearchParams(location.search);
+  const err = q.get('acceso') === 'error' ? q.get('detalle') || 'No se ha podido entrar.' : '';
   return (
     <div className="p-page"><Top label="Área privada" />
-      <main className="p-main"><section className="p-box p-login"><h1>Reuniones</h1><p className="p-muted">Acceso reservado.</p>
-        <form onSubmit={submit} noValidate>
-          <div className="p-field"><label htmlFor="email">Correo</label><input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-          <div className="p-field" style={{ marginTop: 14 }}><label htmlFor="password">Contraseña</label><input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-          <div className="p-actions"><button className="p-btn" disabled={busy}>Entrar</button></div>
-          <p className="p-msg err" role="alert">{msg}</p>
-        </form></section></main></div>);
+      <main className="p-main"><section className="p-box p-login"><h1>Reuniones</h1>
+        <p className="p-muted">Acceso reservado a las personas autorizadas por OdlC, con su cuenta de Microsoft.</p>
+        <a className="p-btn ms" href="/api/entrar"><svg viewBox="0 0 21 21" width="18" height="18" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Iniciar sesión con Microsoft</a>
+        {err && <p className="p-msg err" role="alert">{err}</p>}
+      </section></main></div>);
 }
 
 export default function Panel() {
-  const [auth, setAuth] = useState(null);
-  useEffect(() => { api('/session').then(() => setAuth(true)).catch(() => setAuth(false)); }, []);
-  if (auth === null) return <div className="p-page"><Top label="Reuniones" /></div>;
-  if (!auth) return <Login onOk={() => setAuth(true)} />;
-  return <Dashboard onLogout={() => api('/logout', { method: 'POST', body: {} }).finally(() => setAuth(false))} />;
+  const [user, setUser] = useState(undefined);
+  useEffect(() => { api('/session').then((d) => setUser(d.user)).catch(() => setUser(null)); }, []);
+  if (user === undefined) return <div className="p-page"><Top label="Reuniones" /></div>;
+  if (!user) return <Login />;
+  return <Dashboard user={user} onLogout={() => api('/logout', { method: 'POST', body: {} }).finally(() => { history.replaceState(null, '', '/panel'); setUser(null); })} />;
 }
 
-function Dashboard({ onLogout }) {
+function Dashboard({ user, onLogout }) {
   const [ms, setMs] = useState(null);
   const [meetings, setMeetings] = useState([]);
   const [events, setEvents] = useState(null);
@@ -59,12 +52,12 @@ function Dashboard({ onLogout }) {
   const [armed, setArmed] = useState('');
   const formRef = useRef(null); const resRef = useRef(null); const fileRef = useRef(null);
   const qs = new URLSearchParams(location.search);
-  const [msNote] = useState(qs.get('ms') === 'error' ? 'No se ha podido conectar: ' + (qs.get('detalle') || '') : '');
+  const [msNote] = useState(qs.get('acceso') === 'error' ? 'No se ha podido conectar: ' + (qs.get('detalle') || '') : '');
 
   const loadList = () => api('/reuniones').then((d) => setMeetings(d.meetings)).catch(() => {});
   const loadEvents = () => api('/outlook/eventos').then((d) => { setEvents(d.events); if (d.importadas) loadList(); }).catch((e) => setEvents({ error: e.message }));
   useEffect(() => {
-    if (qs.get('ms')) history.replaceState(null, '', '/panel');
+    if (qs.get('ms') || qs.get('acceso')) history.replaceState(null, '', '/panel');
     api('/ms/estado').then((s) => { setMs(s); if (s.connected && s.teams) loadEvents(); }).catch(() => setMs({ error: true }));
     loadList();
   }, []);
@@ -161,8 +154,8 @@ function Dashboard({ onLogout }) {
         <section className="p-box"><div className="p-ms">
           <div><h2>Microsoft 365</h2><p className="p-muted" style={{ margin: 0 }}>{msNote || msText}</p></div>
           <div className="p-actions" style={{ margin: 0 }}>
-            {ms && ms.configured && !ms.connected && <a className="p-btn ghost" href="/api/ms/conectar">Conectar con Microsoft 365</a>}
-            {ms && ms.connected && <button className="p-btn ghost" type="button" onClick={() => api('/ms/desconectar', { method: 'POST', body: {} }).then(() => location.reload())}>Desconectar</button>}
+            {user.admin && ms && ms.configured && !ms.connected && <a className="p-btn ghost" href="/api/ms/conectar">Conectar con Microsoft 365</a>}
+            {user.admin && ms && ms.connected && <button className="p-btn ghost" type="button" onClick={() => api('/ms/desconectar', { method: 'POST', body: {} }).then(() => location.reload())}>Desconectar</button>}
             <a className="p-btn ghost" href="/" target="_blank" rel="noopener">Ver página de reservas</a>
           </div></div></section>
 
@@ -256,7 +249,34 @@ function Dashboard({ onLogout }) {
               {rowMsg[m.id] && <p className="p-msg">{rowMsg[m.id]}</p>}
             </article>))}
         </section>
+        {user.admin && <Users />}
       </main></div>);
+}
+
+function Users() {
+  const [list, setList] = useState([]); const [email, setEmail] = useState(''); const [nombre, setNombre] = useState(''); const [msg, setMsg] = useState(['', '']);
+  useEffect(() => { api('/usuarios').then((d) => setList(d.usuarios)).catch(() => {}); }, []);
+  async function add(e) {
+    e.preventDefault(); setMsg(['', '']);
+    try { const d = await api('/usuarios', { method: 'POST', body: { email, nombre } }); setList(d.usuarios); setEmail(''); setNombre(''); setMsg(['Autorizado.', 'ok']); }
+    catch (err) { setMsg([err.message, 'err']); }
+  }
+  async function remove(u) {
+    try { const d = await api('/usuarios/' + encodeURIComponent(u.email), { method: 'DELETE' }); setList(d.usuarios); } catch (err) { setMsg([err.message, 'err']); }
+  }
+  return (
+    <section className="p-box"><h2>Personas autorizadas</h2>
+      <p className="p-muted">Solo estas cuentas de Microsoft pueden entrar en el panel. Deben ser cuentas de OdlC (@odlc.es) o personas invitadas a tu Microsoft 365.</p>
+      {list.map((u) => (
+        <article className="p-item" key={u.email}><h3>{u.nombre || u.email}{u.admin && <span className="p-badge proxima">Administradora</span>}</h3><p>{u.email}</p>
+          {!u.admin && <div className="p-actions"><button className="p-btn danger" type="button" onClick={() => remove(u)}>Quitar acceso</button></div>}</article>))}
+      <form className="p-grid" style={{ marginTop: 14 }} onSubmit={add} noValidate>
+        <div className="p-field"><label htmlFor="u-email">Correo de su cuenta de Microsoft</label><input id="u-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+        <div className="p-field"><label htmlFor="u-nombre">Nombre</label><input id="u-nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} /></div>
+        <div className="p-actions full" style={{ marginTop: 0 }}><button className="p-btn" type="submit">Autorizar</button></div>
+      </form>
+      <p className={'p-msg ' + msg[1]}>{msg[0]}</p>
+    </section>);
 }
 
 function Field({ id, label, help, err, full, children }) {

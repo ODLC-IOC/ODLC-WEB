@@ -6,11 +6,27 @@ const ok = (c, m) => { console.log((c ? '✔ ' : '✘ ') + m); if (!c) process.e
   const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   // Sin sesión
   ok((await p.request.get(B + '/api/reuniones')).status() === 401, 'API sin sesión: 401');
-  await p.goto(B + '/panel'); await p.waitForSelector('#email');
-  await p.fill('#email', 'isabel@odlc.es'); await p.fill('#password', 'mal'); await p.click('button.p-btn'); await p.waitForTimeout(600);
-  ok((await p.textContent('.p-msg.err')).includes('incorrectos'), 'Contraseña incorrecta rechazada');
-  await p.fill('#password', 'clave-local-de-prueba'); await p.click('button.p-btn'); await p.waitForSelector('text=Nueva reunión');
-  ok(true, 'Acceso correcto');
+  const M = 'http://localhost:8901';
+  // Sin contraseña: solo «Iniciar sesión con Microsoft» y solo cuentas autorizadas
+  await p.goto(B + '/panel'); await p.waitForSelector('text=Iniciar sesión con Microsoft');
+  ok(await p.locator('input[type=password]').count() === 0, 'No hay campo de contraseña');
+  await p.request.get(M + '/set-user?u=intruso@odlc.es');
+  await p.click('text=Iniciar sesión con Microsoft'); await p.waitForSelector('.p-msg.err');
+  ok((await p.textContent('.p-msg.err')).includes('no está autorizada'), 'Cuenta no autorizada rechazada');
+  ok((await p.request.get(B + '/api/reuniones')).status() === 401, 'Sin sesión tras el rechazo');
+  await p.request.get(M + '/set-user?u=isabel@odlc.es');
+  await p.click('text=Iniciar sesión con Microsoft'); await p.waitForSelector('text=Nueva reunión');
+  ok(true, 'Isabel entra con Microsoft');
+  // Autorizar y quitar a otra persona
+  await p.fill('#u-email', 'ana@odlc.es'); await p.fill('#u-nombre', 'Ana Pérez'); await p.click('text=Autorizar'); await p.waitForSelector('text=ana@odlc.es');
+  const c2 = await b.newContext(); const p2 = await c2.newPage();
+  await p.request.get(M + '/set-user?u=ana@odlc.es');
+  await p2.goto(B + '/panel'); await p2.click('text=Iniciar sesión con Microsoft'); await p2.waitForSelector('text=Nueva reunión');
+  ok(await p2.locator('text=Personas autorizadas').count() === 0, 'Ana entra, pero no gestiona accesos');
+  ok((await p2.request.post(B + '/api/usuarios', { data: { email: 'x@odlc.es' }, headers: { origin: B } })).status() === 403, 'Ana no puede autorizar a nadie');
+  await p.locator('.p-item', { hasText: 'ana@odlc.es' }).locator('text=Quitar acceso').click(); await p.waitForTimeout(500);
+  ok((await p2.request.get(B + '/api/reuniones')).status() === 401, 'Al quitar el acceso, su sesión deja de valer');
+  await c2.close(); await p.request.get(M + '/set-user?u=isabel@odlc.es');
   // Conectar Microsoft (simulado): /api/ms/conectar redirige a Microsoft con state + PKCE
   const r = await p.request.get(B + '/api/ms/conectar', { maxRedirects: 0 });
   const loc = new URL(r.headers()['location']); ok(loc.searchParams.get('code_challenge_method') === 'S256' && loc.searchParams.get('scope') === 'openid offline_access User.Read Calendars.ReadWrite', 'Autorización OAuth con PKCE y permisos mínimos');

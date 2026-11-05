@@ -8,12 +8,23 @@ const tomorrow10 = Date.UTC(2026, 10, 12, 9, 0);
 events.set('BK1', { id: 'BK1', subject: 'Sesión con Laura Gómez', start: { dateTime: iso(tomorrow10) }, end: { dateTime: iso(tomorrow10 + 30 * 60000) }, isOnlineMeeting: true, onlineMeeting: { joinUrl: 'https://teams.microsoft.com/l/meetup-join/BOOKINGS1' }, attendees: [{ emailAddress: { address: 'laura@cliente.es', name: 'Laura Gómez' } }], bodyPreview: 'Reservado con Microsoft Bookings', body: { content: '<html><body><p>Teams</p></body></html>' }, showAs: 'busy' });
 events.set('EV9', { id: 'EV9', subject: 'Reunión con notaría', start: { dateTime: iso(Date.UTC(2026, 10, 13, 10, 0)) }, end: { dateTime: iso(Date.UTC(2026, 10, 13, 11, 0)) }, isOnlineMeeting: true, onlineMeeting: { joinUrl: 'https://teams.microsoft.com/l/meetup-join/NOTARIA' }, attendees: [{ emailAddress: { address: 'notaria@ejemplo.es', name: 'Notaría' } }], bodyPreview: 'Hola', body: { content: '<p>x</p>' }, showAs: 'busy' });
 export const log = [];
+let loginUser = 'isabel@odlc.es'; const nonces = {};
+const b64u = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
 http.createServer((req, res) => {
   let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => {
     const u = new URL(req.url, 'http://x'); log.push(req.method + ' ' + u.pathname);
     const send = (code, d) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(d === undefined ? '' : JSON.stringify(d)); };
     console.log(req.method, u.pathname, b.slice(0, 160));
-    if (u.pathname.endsWith('/token')) return send(200, { access_token: 'AT', refresh_token: 'RT' + (++n) });
+    if (u.pathname === '/set-user') { loginUser = u.searchParams.get('u'); return send(200, { ok: true }); }
+    if (u.pathname.endsWith('/authorize')) {
+      const code = 'C' + (++n); nonces[code] = u.searchParams.get('nonce');
+      res.writeHead(302, { Location: u.searchParams.get('redirect_uri') + '?code=' + code + '&state=' + u.searchParams.get('state') }); return res.end();
+    }
+    if (u.pathname.endsWith('/token')) {
+      const p = new URLSearchParams(b); const nonce = nonces[p.get('code')] || '';
+      const id = b64u({ alg: 'none' }) + '.' + b64u({ aud: 'client', tid: 'tenant', iss: 'x', exp: Math.floor(Date.now() / 1000) + 600, nonce, preferred_username: loginUser, email: 'falso@evil.example' }) + '.x';
+      return send(200, { access_token: 'AT', refresh_token: 'RT' + (++n), id_token: id });
+    }
     if (u.pathname === '/v1.0/me') return send(200, { mail: 'isabel@odlc.es', displayName: 'Isabel' });
     if (u.pathname === '/v1.0/me/calendar') return send(200, { allowedOnlineMeetingProviders: ['teamsForBusiness'] });
     if (u.pathname === '/v1.0/me/calendarView') return send(200, { value: [...events.values()] });
