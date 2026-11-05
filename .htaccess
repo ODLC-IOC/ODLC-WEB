@@ -43,5 +43,5 @@ RewriteRule ^qr_ioc/?$ qr_ioc.html [L]
   </If>
 </IfModule>
 # Reuniones y reservas: viven en citas.odlc.es (carpeta citas/)
-RewriteRule ^reuniones/?$ https://citas.odlc.es/panel [R=302,L]
-RewriteRule ^cita/?$ https://citas.odlc.es/ [R=302,L]
+RewriteRule ^reuniones/?$ https://citas.odlc.es/ [R=302,L]
+RewriteRule ^cita/?$ https://citas.odlc.es/reservar [R=302,L]
