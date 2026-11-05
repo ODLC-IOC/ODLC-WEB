@@ -3,5 +3,5 @@ node_modules/
 .env
 _datos/*
 !_datos/.htaccess
-# citas.odlc.es tiene su propio repositorio (ODLC-IOC/ODLC-CITAS), desplegado en public_html/citas
+# citas.odlc.es tiene su propio repositorio (ODLC-IOC/citas.odlc), desplegado en public_html/citas
 citas/

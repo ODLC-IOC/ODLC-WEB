@@ -1,5 +1,5 @@
 {
   "name": "odlc-web",
   "private": true,
-  "description": "Web de OdlC (estática). La app de citas está en el repositorio ODLC-IOC/ODLC-CITAS (citas.odlc.es)."
+  "description": "Web de OdlC (estática). La app de citas está en el repositorio ODLC-IOC/citas.odlc (citas.odlc.es)."
 }

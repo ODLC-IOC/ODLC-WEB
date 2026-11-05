@@ -109,8 +109,8 @@ En `red-de-colaboradores.html` cada área con partner lleva ficha propia (clase 
 
 ### Cómo se publica
 
-Hostinger copia la rama `main` de este repositorio en `public_html` (webhook). **La app de citas tiene su propio repositorio, `ODLC-IOC/ODLC-CITAS`**, que Hostinger despliega en `public_html/citas` (subdominio `citas.odlc.es`); por eso `citas/` está en `.gitignore` aquí. Todo lo de la app (reservas, panel, invitaciones, API PHP, Microsoft 365 y Bookings) está documentado en el LEEME de ese repositorio.
+Hostinger copia la rama `main` de este repositorio en `public_html` (webhook). **La app de citas tiene su propio repositorio, `ODLC-IOC/citas.odlc`**, que Hostinger despliega en `public_html/citas` (subdominio `citas.odlc.es`); por eso `citas/` está en `.gitignore` aquí. Todo lo de la app (reservas, panel, invitaciones, API PHP, Microsoft 365 y Bookings) está documentado en el LEEME de ese repositorio.
 
 ### Pruebas
 
-Las pruebas de la app de citas están en el repositorio ODLC-CITAS (`pruebas/`).
+Las pruebas de la app de citas están en el repositorio citas.odlc (`pruebas/`).
