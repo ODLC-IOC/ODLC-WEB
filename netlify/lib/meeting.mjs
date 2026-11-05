@@ -147,7 +147,7 @@ function calendarBody(m) {
   lines.push('');
   lines.push('Reunión online por Microsoft Teams.');
   if (m.teamsUrl) lines.push('Unirse a la reunión: ' + m.teamsUrl);
-  lines.push('', 'Invitación: ' + inviteUrl(m), '', `${ODLC.nombre} · ${ODLC.empresa}`, ODLC.web);
+  lines.push('', 'Invitación: ' + inviteUrl(m), 'Tarjeta de contacto: ' + SITE_URL() + '/vcard_ioc', '', `${ODLC.nombre} · ${ODLC.empresa}`, ODLC.web);
   return lines.join('\n');
 }
 

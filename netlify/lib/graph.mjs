@@ -129,7 +129,7 @@ function eventBody(m, sendInvite) {
   };
   const e = {
     subject: m.subject,
-    body: { contentType: 'text', content: [m.description, m.team && m.team.length ? `Por OdlC: ${m.team.join(', ')}` : '', m.guestName ? `Invitado: ${m.guestName}` : '', `Invitación: ${SITE_URL()}/r/${m.id}`].filter(Boolean).join('\n\n') },
+    body: { contentType: 'text', content: [m.description, m.team && m.team.length ? `Por OdlC: ${m.team.join(', ')}` : '', m.guestName ? `Invitado: ${m.guestName}` : '', `Invitación, materiales y calendario: ${SITE_URL()}/r/${m.id}`, `Mi tarjeta de contacto: ${SITE_URL()}/vcard_ioc`].filter(Boolean).join('\n\n') },
     start: { dateTime: local(m.startUtc), timeZone: ODLC.tz },
     end: { dateTime: local(m.endUtc), timeZone: ODLC.tz },
     transactionId: m.id,
