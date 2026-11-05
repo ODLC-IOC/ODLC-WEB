@@ -5,7 +5,7 @@
 // El token de actualización se guarda cifrado (libsodium) en _datos; nunca llega al navegador.
 declare(strict_types=1);
 
-const SCOPES = 'openid offline_access User.Read Calendars.ReadWrite';
+const SCOPES = 'openid offline_access User.Read Calendars.ReadWrite BookingsAppointment.ReadWrite.All';
 
 class GraphError extends RuntimeException {}
 
@@ -230,4 +230,51 @@ function busy_intervals(int $fromMs, int $toMs): array {
         $busy[] = [strtotime($e['start']['dateTime'] . 'Z') * 1000, strtotime($e['end']['dateTime'] . 'Z') * 1000];
     }
     return $busy;
+}
+
+// ---------- Microsoft Bookings (página de reservas compartida de OdlC) ----------
+// La API de Bookings solo funciona con páginas de reservas compartidas, no con la página personal «Bookings with me».
+function iso_minutes(string $d): int {
+    if (!preg_match('/^P(?:\d+D)?T?(?:(\d+)H)?(?:(\d+)M)?/', $d, $m)) return 30;
+    return (int)($m[1] ?? 0) * 60 + (int)($m[2] ?? 0) + (preg_match('/^P(\d+)D/', $d, $dd) ? (int)$dd[1] * 1440 : 0);
+}
+function bk_businesses(): array {
+    $d = graph('GET', '/solutions/bookingBusinesses?$select=id,displayName,email');
+    return array_map(fn($b) => ['id' => $b['id'], 'nombre' => $b['displayName'] ?? $b['id']], $d['value'] ?? []);
+}
+function bk_business(): string { return (string)(get_json('bookings')['business'] ?? ''); }
+function bk_services(string $biz): array {
+    $cache = get_json('bk-cache');
+    if ($cache && $cache['biz'] === $biz && $cache['at'] > time() - 600) return $cache['services'];
+    $id = rawurlencode($biz);
+    $d = graph('GET', "/solutions/bookingBusinesses/$id/services");
+    $staff = graph('GET', "/solutions/bookingBusinesses/$id/staffMembers");
+    $me = '';
+    foreach ($staff['value'] ?? [] as $st) if (strtolower($st['emailAddress'] ?? '') === admin_email()) $me = $st['id'];
+    if (!$me && !empty($staff['value'][0]['id'])) $me = $staff['value'][0]['id'];
+    $services = [];
+    foreach ($d['value'] ?? [] as $sv) {
+        if (!empty($sv['isHiddenFromCustomers'])) continue;
+        $services[] = ['id' => $sv['id'], 'nombre' => $sv['displayName'], 'duracion' => iso_minutes((string)($sv['defaultDuration'] ?? 'PT30M')),
+            'descripcion' => trim(strip_tags((string)($sv['description'] ?? ''))), 'staff' => $me, 'online' => (bool)($sv['isLocationOnline'] ?? true)];
+    }
+    set_json('bk-cache', ['biz' => $biz, 'at' => time(), 'services' => $services]);
+    return $services;
+}
+function bk_create(string $biz, array $sv, array $m, string $company): array {
+    $utc = fn(int $ms) => ['dateTime' => gmdate('Y-m-d\TH:i:s', intdiv($ms, 1000)) . '.0000000+00:00', 'timeZone' => 'UTC'];
+    $ap = graph('POST', '/solutions/bookingBusinesses/' . rawurlencode($biz) . '/appointments', [
+        'serviceId' => $sv['id'], 'staffMemberIds' => $sv['staff'] ? [$sv['staff']] : [],
+        'startDateTime' => $utc($m['startUtc']), 'endDateTime' => $utc($m['endUtc']),
+        'isLocationOnline' => true, 'optOutOfCustomerEmail' => false, 'customerTimeZone' => ODLC_TZ, 'smsNotificationsEnabled' => false,
+        'serviceNotes' => 'Invitación OdlC: ' . invite_url($m),
+        'customers' => [['@odata.type' => '#microsoft.graph.bookingCustomerInformation', 'name' => $m['guestName'], 'emailAddress' => $m['guestEmail'],
+            'phone' => $m['guestPhone'], 'notes' => trim(($company ? "Empresa: $company\n" : '') . ($m['description'] ?? '')), 'timeZone' => ODLC_TZ]],
+    ]);
+    $join = (string)($ap['joinWebUrl'] ?? '');
+    return ['appointmentId' => $ap['id'] ?? '', 'joinUrl' => $join];
+}
+function bk_cancel(string $biz, string $apId): void {
+    $c = graph_code('POST', '/solutions/bookingBusinesses/' . rawurlencode($biz) . '/appointments/' . rawurlencode($apId) . '/cancel', ['cancellationMessage' => 'La reunión con OdlC queda cancelada.']);
+    if ($c >= 400 && $c !== 404) throw new GraphError("Bookings no ha podido cancelar la cita ($c).");
 }

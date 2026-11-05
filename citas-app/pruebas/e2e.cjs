@@ -29,7 +29,7 @@ const ok = (c, m) => { console.log((c ? '✔ ' : '✘ ') + m); if (!c) process.e
   await c2.close(); await p.request.get(M + '/set-user?u=isabel@odlc.es');
   // Conectar Microsoft (simulado): /api/ms/conectar redirige a Microsoft con state + PKCE
   const r = await p.request.get(B + '/api/ms/conectar', { maxRedirects: 0 });
-  const loc = new URL(r.headers()['location']); ok(loc.searchParams.get('code_challenge_method') === 'S256' && loc.searchParams.get('scope') === 'openid offline_access User.Read Calendars.ReadWrite', 'Autorización OAuth con PKCE y permisos mínimos');
+  const loc = new URL(r.headers()['location']); ok(loc.searchParams.get('code_challenge_method') === 'S256' && loc.searchParams.get('scope') === 'openid offline_access User.Read Calendars.ReadWrite BookingsAppointment.ReadWrite.All', 'Autorización OAuth con PKCE y permisos mínimos');
   await p.goto(B + '/api/ms/callback?code=C&state=' + loc.searchParams.get('state')); await p.waitForURL('**/panel**'); await p.waitForSelector('text=Citas de Outlook y Bookings');
   ok((await p.textContent('.p-box')).includes('Conectado como isabel@odlc.es'), 'Microsoft 365 conectado');
   await p.waitForTimeout(1200);
@@ -71,6 +71,15 @@ const ok = (c, m) => { console.log((c ? '✔ ' : '✘ ') + m); if (!c) process.e
   await w.click('text=Confirmar la cita'); await w.waitForURL('**/r/**'); await w.waitForSelector('.r-grid');
   ok((await w.textContent('main')).includes('Cita confirmada') && (await w.textContent('main')).includes('Pedro Ruiz'), 'Reserva creada y se abre su invitación');
   await w.screenshot({ path: S + '/shots/react-res4.png', fullPage: true });
+  // Bookings: elegir la página compartida y reservar a través de ella
+  await p.reload(); await p.waitForSelector('#bk'); await p.selectOption('#bk', 'OdlC@odlc.es'); await p.waitForSelector('text=Sesión gratuita OdlC · 30 min');
+  ok(true, 'Página compartida de Bookings elegida y sus servicios visibles');
+  await w.goto(B + '/'); await w.click('text=Sesión gratuita OdlC'); await w.waitForSelector('.b-hours button');
+  await w.click('.b-days button:nth-child(3)'); await w.click('.b-hours button >> nth=0'); await w.click('text=Continuar');
+  await w.fill('#b-n', 'Lucía Martín'); await w.fill('#b-e', 'lucia@empresa.es'); await w.check('.chk input'); await w.click('text=Confirmar la cita'); await w.waitForURL('**/r/**'); await w.waitForSelector('.r-grid');
+  const ap = await (await w.request.get(M + '/last-appt')).json();
+  ok(ap.serviceId === 'SV1' && ap.customers[0].emailAddress === 'lucia@empresa.es' && ap.isLocationOnline === true && ap.staffMemberIds[0] === 'ST1', 'Cita creada en Microsoft Bookings con el cliente y Teams');
+  ok(await w.getAttribute('a.t-btn', 'href') === 'https://teams.microsoft.com/l/meetup-join/BOOKINGSAPPT', 'La invitación lleva el Teams que genera Bookings');
   // Cancelar desde el panel
   await p.reload(); await p.waitForSelector('text=Mis reuniones');
   const item = p.locator('.p-item', { hasText: 'Pedro Ruiz' }); await item.locator('button.danger').click(); await item.locator('button.danger').click(); await p.waitForTimeout(800);

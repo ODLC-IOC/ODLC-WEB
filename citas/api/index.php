@@ -22,9 +22,8 @@ try {
 
     // Reservas: tipos y huecos libres
     if ($path === '/reservas' && $method === 'GET') {
-        $s = booking_settings();
-        $tipos = array_map(fn($t) => ['id' => $t['id'], 'nombre' => $t['nombre'], 'duracion' => $t['duracion'], 'descripcion' => $t['descripcion'] ?? ''], $s['tipos']);
-        if (!ms_ready()) send_json(['disponible' => false, 'tipos' => $tipos]);
+        if (!ms_ready()) send_json(['disponible' => false, 'tipos' => []]);
+        $tipos = array_map(fn($t) => ['id' => $t['id'], 'nombre' => $t['nombre'], 'duracion' => $t['duracion'], 'descripcion' => $t['descripcion'] ?? ''], booking_types());
         $tipo = booking_type((string)($_GET['tipo'] ?? '')) ;
         send_json(['disponible' => true, 'tipos' => $tipos, 'huecos' => $tipo ? booking_slots($tipo) : new stdClass()]);
     }
@@ -53,8 +52,16 @@ try {
             'createdAt' => $now, 'updatedAt' => $now, 'subject' => $tipo['nombre'] . ' · ' . ($company ?: $name), 'guestName' => $name, 'guestEmail' => $email,
             'guestPhone' => $phone, 'description' => $notes, 'notes' => $company ? "Empresa: $company" : '', 'team' => [ODLC_NOMBRE],
             'startUtc' => $start, 'endUtc' => $start + $tipo['duracion'] * 60000, 'duration' => (int)$tipo['duracion'], 'materials' => [], 'sendInvite' => true];
-        $ev = create_teams_event($m, true); // Outlook envía al cliente la convocatoria oficial con Teams
-        $m['teamsUrl'] = $ev['joinUrl']; $m['graphEventId'] = $ev['eventId'];
+        if (!empty($tipo['bookings'])) {
+            // Cita creada en Microsoft Bookings: Bookings envía la confirmación al cliente y la pone en el calendario de Isabel
+            $m['source'] = 'bookings'; $m['mode'] = 'bookings'; $m['bookingsBusiness'] = bk_business();
+            $ap = bk_create(bk_business(), $tipo, $m, $company);
+            $m['bookingAppointmentId'] = $ap['appointmentId']; $m['teamsUrl'] = $ap['joinUrl'];
+            $linked = get_json('ms/linked') ?? []; $linked['bk:' . $ap['appointmentId']] = $id; set_json('ms/linked', $linked);
+        } else {
+            $ev = create_teams_event($m, true); // Outlook envía al cliente la convocatoria oficial con Teams
+            $m['teamsUrl'] = $ev['joinUrl']; $m['graphEventId'] = $ev['eventId'];
+        }
         set_json("m/$id", $m);
         $rl['n']++; set_json($rk, $rl);
         send_json(['id' => $id, 'url' => invite_url($m)], 201);
@@ -110,6 +117,21 @@ try {
     }
     if ($path === '/ms/desconectar' && $method === 'POST') { if (empty($user['admin'])) send_json(['error' => 'Solo la administradora.'], 403); del_key('ms/token'); send_json(['ok' => true]); }
 
+    // Página de reservas compartida de Bookings
+    if ($path === '/bookings' && $method === 'GET') {
+        if (!ms_ready()) send_json(['negocios' => [], 'elegido' => '']);
+        try { $list = bk_businesses(); } catch (GraphError $e) { send_json(['negocios' => [], 'elegido' => bk_business(), 'error' => $e->getMessage()]); }
+        $sel = bk_business(); $services = [];
+        if ($sel) { try { $services = bk_services($sel); } catch (GraphError $e) {} }
+        send_json(['negocios' => $list, 'elegido' => $sel, 'servicios' => $services]);
+    }
+    if ($path === '/bookings' && $method === 'POST') {
+        if (empty($user['admin'])) send_json(['error' => 'Solo la administradora.'], 403);
+        $biz = (string)(body_json()['business'] ?? '');
+        set_json('bookings', ['business' => $biz]); del_key('bk-cache');
+        send_json(['ok' => true]);
+    }
+
     // Eventos de Outlook y Bookings
     if ($path === '/outlook/eventos' && $method === 'GET') { $n = sync_bookings(); send_json(['events' => outlook_events(), 'importadas' => $n]); }
     if ($path === '/outlook/importar' && $method === 'POST') {
@@ -160,6 +182,7 @@ try {
         if ($sub === 'cancelar' && $method === 'POST') {
             if ($m['status'] !== 'cancelada') {
                 if (!empty($m['graphEventId']) && $m['mode'] === 'auto') cancel_teams_event($m);
+                if (!empty($m['bookingAppointmentId'])) bk_cancel((string)$m['bookingsBusiness'], (string)$m['bookingAppointmentId']);
                 $m = array_replace($m, ['status' => 'cancelada', 'updatedAt' => time() * 1000, 'cancelledAt' => time() * 1000, 'sequence' => ($m['sequence'] ?? 0) + 1]);
                 set_json($key, $m);
             }

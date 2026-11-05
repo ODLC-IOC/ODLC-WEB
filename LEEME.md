@@ -142,9 +142,18 @@ Sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, firmada, de 8 horas; 
 1. https://entra.microsoft.com (con isabel@odlc.es como administradora) → **Identity → Applications → App registrations → New registration**. Nombre `OdlC Citas`; *Accounts in this organizational directory only (Single tenant)*; Redirect URI **Web** `https://citas.odlc.es/api/ms/callback`.
 2. Copiar *Application (client) ID* → `ms_client_id` y *Directory (tenant) ID* → `ms_tenant_id`.
 3. **Certificates & secrets → New client secret** (24 meses) → copiar el **Value** → `ms_client_secret`. Apuntar su renovación.
-4. **API permissions → Microsoft Graph → Delegated**: `openid`, `profile`, `email`, `offline_access`, `User.Read`, `Calendars.ReadWrite` → **Grant admin consent for OdlC**.
+4. **API permissions → Microsoft Graph → Delegated**: `openid`, `profile`, `email`, `offline_access`, `User.Read`, `Calendars.ReadWrite`, `BookingsAppointment.ReadWrite.All` → **Grant admin consent for OdlC**.
 5. Entrar en `citas.odlc.es/panel` → **Iniciar sesión con Microsoft** → **Conectar con Microsoft 365** (calendario). Se comprueba que el calendario admite Teams y solo se acepta isabel@odlc.es.
 6. Para dar acceso a alguien de fuera: en Microsoft 365, invitarle como invitado (Entra ID → Users → Invite external user) y añadir su correo en **Personas autorizadas**.
+
+### Microsoft Bookings
+
+La API de Microsoft solo permite crear citas en **páginas de reservas compartidas** de Bookings, no en la página personal «Bookings with me». Para que la página de citas.odlc.es reserve a través de Bookings:
+
+1. https://outlook.office.com/bookings → **Nueva página de reservas** → **Compartida**. Nombre `OdlC`, zona horaria Madrid, horario de atención.
+2. **Servicios**: crear «Sesión gratuita OdlC», 30 min, **Reunión de Teams** activado (y, si se quiere, «Arranque del Diagnóstico OdlC», 60 min). Isabel como miembro del personal.
+3. En el panel → **Página de reservas · Microsoft Bookings** → elegir `OdlC`. Desde ese momento, citas.odlc.es muestra esos servicios, cada reserva se crea en Bookings (que envía al cliente su confirmación con Teams y la pone en el calendario de Isabel) y se abre la invitación de OdlC.
+4. Los botones «Reservar sesión» de odlc.es pueden apuntar a `https://citas.odlc.es/` en lugar del enlace de Bookings (variable `CALENDAR_URL` de `assets/js/main.js`).
 
 ### Qué hace la conexión
 

@@ -159,6 +159,8 @@ function Dashboard({ user, onLogout }) {
             <a className="p-btn ghost" href="/" target="_blank" rel="noopener">Ver página de reservas</a>
           </div></div></section>
 
+        {autoOk && user.admin && <BookingsBox />}
+
         {autoOk && (
           <section className="p-box"><h2>Citas de Outlook y Bookings</h2>
             <p className="p-muted">Reuniones de Teams de tu calendario (próximos 60 días). Las reservas de Bookings se convierten solas; para las demás, pulsa «Crear invitación»: se genera la página y su enlace se añade dentro del evento de tu Outlook.</p>
@@ -251,6 +253,24 @@ function Dashboard({ user, onLogout }) {
         </section>
         {user.admin && <Users />}
       </main></div>);
+}
+
+function BookingsBox() {
+  const [d, setD] = useState(null); const [msg, setMsg] = useState('');
+  const load = () => api('/bookings').then(setD).catch((e) => setMsg(e.message));
+  useEffect(() => { load(); }, []);
+  async function choose(e) { await api('/bookings', { method: 'POST', body: { business: e.target.value } }); load(); }
+  return (
+    <section className="p-box"><h2>Página de reservas · Microsoft Bookings</h2>
+      <p className="p-muted">Elige tu página de reservas <b>compartida</b> de Bookings. La página de citas.odlc.es mostrará sus servicios y cada reserva se creará en Bookings, que envía la confirmación al cliente con Teams. Sin elegir ninguna, las reservas van directas a tu calendario de Outlook.</p>
+      {!d && !msg && <p className="p-muted">Cargando…</p>}
+      {d && d.error && <p className="p-msg err">{d.error}</p>}
+      {d && <div className="p-field"><label htmlFor="bk">Página de reservas compartida</label>
+        <select id="bk" value={d.elegido} onChange={choose}><option value="">— Ninguna: reservas directas en Outlook —</option>{d.negocios.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}</select>
+        {d.negocios.length === 0 && <small>No hay páginas compartidas. Créala en Bookings: Nueva página de reservas → Compartida.</small>}</div>}
+      {d && d.elegido && <ul className="p-mats">{(d.servicios || []).map((sv) => <li key={sv.id}><span>{sv.nombre} · {sv.duracion} min</span></li>)}</ul>}
+      {msg && <p className="p-msg err">{msg}</p>}
+    </section>);
 }
 
 function Users() {

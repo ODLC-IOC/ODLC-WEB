@@ -17,8 +17,16 @@ function booking_settings(): array {
     return array_replace($def, $s);
 }
 
+// Si hay una página de reservas compartida de Bookings elegida, los tipos de cita son sus servicios
+function booking_types(): array {
+    $biz = bk_business();
+    if ($biz && ms_ready()) {
+        try { return array_map(fn($sv) => $sv + ['bookings' => true], bk_services($biz)); } catch (GraphError $e) { error_log('Bookings: ' . $e->getMessage()); }
+    }
+    return booking_settings()['tipos'];
+}
 function booking_type(string $id): ?array {
-    foreach (booking_settings()['tipos'] as $t) if ($t['id'] === $id) return $t;
+    foreach (booking_types() as $t) if ($t['id'] === $id) return $t;
     return null;
 }
 

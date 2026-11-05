@@ -33,6 +33,12 @@ http.createServer((req, res) => {
       events.set(id, { id, ...d, start: { dateTime: iso(Date.parse(d.start.dateTime + '+01:00')) }, end: { dateTime: iso(Date.parse(d.end.dateTime + '+01:00')) }, onlineMeeting: { joinUrl: 'https://teams.microsoft.com/l/meetup-join/' + id }, showAs: 'busy' });
       return send(201, events.get(id));
     }
+    if (u.pathname === '/v1.0/solutions/bookingBusinesses') return send(200, { value: [{ id: 'OdlC@odlc.es', displayName: 'OdlC' }] });
+    if (u.pathname.endsWith('/services')) return send(200, { value: [{ id: 'SV1', displayName: 'Sesión gratuita OdlC', defaultDuration: 'PT30M', description: 'Primera conversación de 30 minutos.' }] });
+    if (u.pathname.endsWith('/staffMembers')) return send(200, { value: [{ id: 'ST1', emailAddress: 'isabel@odlc.es' }] });
+    if (u.pathname.endsWith('/appointments') && req.method === 'POST') { const d = JSON.parse(b); globalThis.lastAppt = d; return send(201, { id: 'AP1', joinWebUrl: 'https://teams.microsoft.com/l/meetup-join/BOOKINGSAPPT' }); }
+    if (u.pathname.endsWith('/appointments/AP1/cancel')) return send(204);
+    if (u.pathname === '/last-appt') return send(200, globalThis.lastAppt || {});
     const m = u.pathname.match(/^\/v1\.0\/me\/events\/([^/]+)(\/cancel)?$/);
     if (m) {
       const ev = events.get(decodeURIComponent(m[1])); if (!ev) return send(404, { error: { message: 'no' } });
