@@ -19,7 +19,7 @@ ${description ? `<meta name="description" content="${esc(description)}">` : ''}
 <meta name="theme-color" content="#17302A">
 ${og ? `<meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
-<meta property="og:site_name" content="ODLC">
+<meta property="og:site_name" content="OdlC">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 ${ogUrl ? `<meta property="og:url" content="${esc(ogUrl)}">` : ''}
@@ -27,7 +27,7 @@ ${ogUrl ? `<meta property="og:url" content="${esc(ogUrl)}">` : ''}
 <meta property="og:image:secure_url" content="${site}/assets/img/og/invitacion-odlc.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="ODLC · Invitación a reunión">
+<meta property="og:image:alt" content="OdlC · Invitación a reunión">
 <meta name="twitter:card" content="summary_large_image">` : ''}
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
@@ -46,11 +46,11 @@ function cardShell(inner, kicker = 'Invitación a reunión') {
   return `<body class="t-page">
 <main class="t-card">
   <header class="t-head">
-    <img src="/assets/img/logo-odlc-claro.svg" alt="ODLC" width="230" height="75">
+    <img src="/assets/img/logo-odlc-claro.svg" alt="OdlC" width="230" height="75">
     <p class="t-kicker">${esc(kicker)}</p>
   </header>
   <section class="t-body">${inner}
-    <p class="t-foot">ODLC · <a href="${ODLC.web}">odlc.es</a></p>
+    <p class="t-foot">OdlC · <a href="${ODLC.web}">odlc.es</a></p>
   </section>
 </main>
 </body>
@@ -60,54 +60,55 @@ function cardShell(inner, kicker = 'Invitación a reunión') {
 export function invitationPage(m) {
   const st = estado(m);
   const links = calendarLinks(m);
+  const fecha = new Intl.DateTimeFormat('es-ES', { timeZone: ODLC.tz, day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(m.startUtc)).replace('.', '');
+  const dia = fechaLarga(m.startUtc).split(',')[0];
+  const zona = zonaTexto(m.startUtc).match(/\((.+)\)/)[1];
   const status = st === 'cancelada'
     ? '<p class="r-status cancelada">Reunión cancelada</p>'
-    : st === 'pasada' ? '<p class="r-status pasada">Esta reunión ya se ha celebrado</p>' : '';
+    : st === 'pasada' ? '<p class="r-status pasada">Reunión ya celebrada</p>' : '';
   const join = st === 'proxima' && m.teamsUrl
     ? `<a class="t-btn" href="${esc(m.teamsUrl)}" target="_blank" rel="noopener noreferrer">${ICO.teams}Unirse a la reunión</a>`
     : '';
   const cal = st === 'cancelada'
-    ? `<a class="t-btn t-light" href="${esc(links.ics)}">${ICO.cal}Actualizar mi calendario (.ics)</a>
-       <p class="r-note">Si ya la había añadido a su calendario, abra este archivo para marcarla como cancelada o elimínela manualmente.</p>`
+    ? `<a class="t-btn t-light" href="${esc(links.ics)}">${ICO.cal}Actualizar mi calendario</a>`
     : st === 'proxima' ? `<details class="r-cal">
-      <summary class="t-btn t-light">${ICO.cal}Añadir a mi calendario</summary>
-      <ul>
-        <li><a href="${esc(links.outlookWork)}" target="_blank" rel="noopener noreferrer">Outlook · Microsoft 365 (trabajo)</a></li>
-        <li><a href="${esc(links.outlookPersonal)}" target="_blank" rel="noopener noreferrer">Outlook.com · Hotmail</a></li>
-        <li><a href="${esc(links.google)}" target="_blank" rel="noopener noreferrer">Google Calendar</a></li>
-        <li><a href="${esc(links.ics)}">Apple Calendar (iPhone, iPad, Mac)</a></li>
-        <li><a href="${esc(links.ics)}" download="reunion-odlc.ics">Otros calendarios · archivo .ics</a></li>
-      </ul>
-    </details>
-    <p class="r-note">Al añadirla, su calendario guarda una copia. Si la reunión cambia, le enviaremos el nuevo enlace; los cambios no siempre se actualizan solos.</p>` : '';
+      <summary class="t-btn t-light">${ICO.cal}Añadir al calendario</summary>
+      <div class="r-sheet" role="dialog" aria-label="Elegir calendario">
+        <p class="r-sheet-t">¿En qué calendario?</p>
+        <div class="r-opts">
+          <a href="${esc(links.outlookWork)}" target="_blank" rel="noopener noreferrer"><b>Outlook</b><span>Microsoft 365</span></a>
+          <a href="${esc(links.google)}" target="_blank" rel="noopener noreferrer"><b>Google</b><span>Calendar</span></a>
+          <a href="${esc(links.ics)}"><b>Apple</b><span>iPhone · Mac</span></a>
+          <a href="${esc(links.outlookPersonal)}" target="_blank" rel="noopener noreferrer"><b>Outlook.com</b><span>Hotmail</span></a>
+        </div>
+        <a class="r-other" href="${esc(links.ics)}" download="reunion-odlc.ics">Otro calendario · descargar .ics</a>
+      </div>
+    </details>` : '';
   const inner = `
     ${status}
-    <h1 class="r-title">Reunión con ODLC</h1>
-    <p class="r-sub">${esc(ODLC.nombre)}</p>
-    ${m.guestName ? `<p class="r-guest">Invitación para <strong>${esc(m.guestName)}</strong></p>` : ''}
-    <div class="t-rule" aria-hidden="true"></div>
-    <dl class="r-dl">
-      <div><dt>Asunto</dt><dd>${esc(m.subject)}</dd></div>
-      <div><dt>Fecha</dt><dd>${esc(fechaLarga(m.startUtc))}</dd></div>
-      <div><dt>Hora</dt><dd>${esc(horaCorta(m.startUtc))} – ${esc(horaCorta(m.endUtc))} h</dd></div>
-      <div><dt>Zona</dt><dd>${esc(zonaTexto(m.startUtc))}</dd></div>
-      <div><dt>Duración</dt><dd>${m.duration} minutos</dd></div>
-      <div><dt>Lugar</dt><dd>Microsoft Teams · Reunión online</dd></div>
-      ${m.description ? `<div><dt>Detalles</dt><dd>${esc(m.description).replace(/\n/g, '<br>')}</dd></div>` : ''}
+    <p class="r-eyebrow">Reunión con OdlC</p>
+    <h1 class="r-title">${esc(m.subject)}</h1>
+    <p class="r-guest">${esc(ODLC.nombre)}${m.guestName ? ` · para ${esc(m.guestName)}` : ''}</p>
+    <dl class="r-grid">
+      <div><dt>Fecha</dt><dd>${esc(fecha)}</dd><dd class="r-s">${esc(dia)}</dd></div>
+      <div><dt>Hora</dt><dd>${esc(horaCorta(m.startUtc))} h</dd><dd class="r-s">hasta las ${esc(horaCorta(m.endUtc))}</dd></div>
+      <div><dt>Zona</dt><dd>Madrid</dd><dd class="r-s">${esc(zona)}</dd></div>
+      <div><dt>Duración</dt><dd>${m.duration} min</dd><dd class="r-s">Microsoft Teams</dd></div>
     </dl>
+    ${m.description ? `<p class="r-desc">${esc(m.description).replace(/\n/g, '<br>')}</p>` : ''}
     ${join}
     ${cal}`;
   return head({
-    title: 'Invitación a reunión · ODLC',
+    title: 'Invitación a reunión · OdlC',
     description: 'Consulte la invitación, únase por Microsoft Teams y añádala a su calendario.',
     ogUrl: `${SITE_URL()}/r/${m.id}`,
   }) + cardShell(inner);
 }
 
 export function notFoundPage() {
-  return head({ title: 'Invitación no disponible · ODLC', og: false }) + cardShell(`
+  return head({ title: 'Invitación no disponible · OdlC', og: false }) + cardShell(`
     <h1 class="r-title">Invitación no disponible</h1>
-    <p class="r-sub" style="margin-top:10px">El enlace no es correcto o la invitación ya no existe. Si necesita ayuda, escriba a <a href="mailto:${ODLC.email}">${ODLC.email}</a>.</p>`, 'ODLC');
+    <p class="r-sub" style="margin-top:10px">El enlace no es correcto o la invitación ya no existe. Si necesita ayuda, escriba a <a href="mailto:${ODLC.email}">${ODLC.email}</a>.</p>`, 'OdlC');
 }
 
 // ---------- Panel privado ----------
@@ -119,8 +120,8 @@ export function loginPage({ missing = [] } = {}) {
   const warn = missing.length
     ? `<p class="p-msg err">Falta configurar en Netlify: ${missing.map(esc).join(', ')}. El acceso está desactivado hasta entonces.</p>`
     : '';
-  return panelHead('Acceso · Reuniones ODLC') + `<body class="p-page">
-<header class="p-top"><div class="wrap"><img src="/assets/img/logo-odlc-claro.svg" alt="ODLC" width="96" height="31"><span>Área privada</span></div></header>
+  return panelHead('Acceso · Reuniones OdlC') + `<body class="p-page">
+<header class="p-top"><div class="wrap"><img src="/assets/img/logo-odlc-claro.svg" alt="OdlC" width="96" height="31"><span>Área privada</span></div></header>
 <main class="p-main">
   <section class="p-box p-login">
     <h1>Reuniones</h1>
@@ -153,8 +154,8 @@ document.getElementById('login').addEventListener('submit', async function (e) {
 }
 
 export function panelPage() {
-  return panelHead('Reuniones · ODLC') + `<body class="p-page">
-<header class="p-top"><div class="wrap"><img src="/assets/img/logo-odlc-claro.svg" alt="ODLC" width="96" height="31"><span>Reuniones</span><button type="button" id="logout">Salir</button></div></header>
+  return panelHead('Reuniones · OdlC') + `<body class="p-page">
+<header class="p-top"><div class="wrap"><img src="/assets/img/logo-odlc-claro.svg" alt="OdlC" width="96" height="31"><span>Reuniones</span><button type="button" id="logout">Salir</button></div></header>
 <main class="p-main">
 
   <section class="p-box" id="ms-box">

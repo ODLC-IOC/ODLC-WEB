@@ -1,4 +1,4 @@
-/* Panel privado de reuniones ODLC. No contiene credenciales: todas las operaciones
+/* Panel privado de reuniones OdlC. No contiene credenciales: todas las operaciones
    pasan por /api/..., que comprueba la sesión en el servidor. */
 (function () {
   'use strict';

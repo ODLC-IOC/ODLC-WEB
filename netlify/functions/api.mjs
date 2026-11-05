@@ -36,7 +36,7 @@ export default async (req, context) => {
       } catch (e) {
         target = '/reuniones?ms=error&detalle=' + encodeURIComponent(e.message.slice(0, 250));
       }
-      return html(`<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=${esc(target)}"><title>ODLC</title><p style="font-family:sans-serif">Volviendo al panel… <a href="${esc(target)}">Continuar</a></p>`);
+      return html(`<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=${esc(target)}"><title>OdlC</title><p style="font-family:sans-serif">Volviendo al panel… <a href="${esc(target)}">Continuar</a></p>`);
     }
 
     if (!isAuthenticated(req)) return notAuth();
@@ -105,8 +105,8 @@ export default async (req, context) => {
         const next = { ...m, status: 'cancelada', updatedAt: Date.now(), cancelledAt: Date.now(), sequence: (m.sequence || 0) + 1 };
         await setJSON(key, next);
         const saludo = next.guestName ? `Hola, ${next.guestName}:` : 'Hola:';
-        const cancelText = [saludo, '', `Te escribo para avisarte de que la reunión con ODLC prevista para el ${fechaLarga(next.startUtc).toLowerCase()} a las ${horaCorta(next.startUtc)} h (Madrid) queda cancelada.`, '',
-          'Si la habías añadido a tu calendario, puedes actualizarla aquí:', inviteUrl(next), '', 'Un saludo,', '', 'Isabel Olivares de la Cerda', 'ODLC'].join('\n');
+        const cancelText = [saludo, '', `Te escribo para avisarte de que la reunión con OdlC prevista para el ${fechaLarga(next.startUtc).toLowerCase()} a las ${horaCorta(next.startUtc)} h (Madrid) queda cancelada.`, '',
+          'Si la habías añadido a tu calendario, puedes actualizarla aquí:', inviteUrl(next), '', 'Un saludo,', '', 'Isabel Olivares de la Cerda', 'OdlC'].join('\n');
         return json({ meeting: adminView(next), cancelText });
       }
     }

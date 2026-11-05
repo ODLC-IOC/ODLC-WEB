@@ -206,7 +206,7 @@ export function whatsappText(m) {
   const saludo = m.guestName ? `Hola, ${m.guestName}:` : 'Hola:';
   return [
     saludo, '',
-    'Te envío la invitación para nuestra reunión con ODLC.', '',
+    'Te envío la invitación para nuestra reunión con OdlC.', '',
     `📅 ${fechaLarga(m.startUtc)}`,
     `${clock(hora)} ${hora} h (Madrid)`,
     '💻 Microsoft Teams', '',

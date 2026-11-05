@@ -2,7 +2,7 @@ BEGIN:VCARD
 VERSION:3.0
 N:Olivares de la Cerda;Isabel;;;
 FN:Isabel Olivares de la Cerda
-ORG:ODLC
+ORG:OdlC
 TEL;TYPE=CELL,VOICE:+34 667 61 31 40
 EMAIL;TYPE=INTERNET,WORK:isabel@odlc.es
 URL;TYPE=WORK:https://odlc.es

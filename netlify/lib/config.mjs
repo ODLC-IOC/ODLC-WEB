@@ -1,9 +1,9 @@
-// Datos fijos de ODLC y lectura de la configuración del servidor (variables de entorno de Netlify).
+// Datos fijos de OdlC y lectura de la configuración del servidor (variables de entorno de Netlify).
 // Ningún secreto se escribe en el código: todos se leen de process.env en tiempo de ejecución.
 
 export const ODLC = {
   nombre: 'Isabel Olivares de la Cerda',
-  empresa: 'ODLC',
+  empresa: 'OdlC',
   email: 'isabel@odlc.es',
   web: 'https://odlc.es',
   tz: 'Europe/Madrid',

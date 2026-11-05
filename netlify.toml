@@ -28,7 +28,7 @@
   for = "/assets/descargas/*.vcf"
   [headers.values]
     Content-Type = "text/vcard; charset=utf-8"
-    Content-Disposition = "attachment; filename=\"Isabel-Olivares-de-la-Cerda-ODLC.vcf\""
+    Content-Disposition = "attachment; filename=\"Isabel-Olivares-de-la-Cerda-OdlC.vcf\""
     X-Robots-Tag = "noindex"
     Cache-Control = "public, max-age=0, must-revalidate"
 

@@ -58,7 +58,7 @@ await t('Contraseña incorrecta: 401', async () => assert.equal((await api(req('
 await t('Acceso desde otro origen: 403', async () => assert.equal((await api(req('/api/login', { method: 'POST', body: { email: 'isabel@odlc.es', password: TEST_PASS }, origin: 'https://evil.example' }), ctx())).status, 403));
 let cookie;
 await t('Acceso correcto: cookie HttpOnly, Secure, SameSite=Strict', async () => {
-  const r = await api(req('/api/login', { method: 'POST', body: { email: 'Isabel@ODLC.es ', password: TEST_PASS } }), ctx());
+  const r = await api(req('/api/login', { method: 'POST', body: { email: 'Isabel@OdlC.es ', password: TEST_PASS } }), ctx());
   assert.equal(r.status, 200);
   const sc = r.headers.get('set-cookie');
   assert.match(sc, /HttpOnly/); assert.match(sc, /Secure/); assert.match(sc, /SameSite=Strict/);
@@ -97,7 +97,7 @@ await t('Crear reunión manual', async () => {
   assert.equal(meeting.url, 'https://odlc.es/r/' + meeting.id);
 });
 await t('Mensaje de WhatsApp con los datos reales', () => {
-  assert.equal(meeting.whatsappText, `Hola, María:\n\nTe envío la invitación para nuestra reunión con ODLC.\n\n📅 Martes, 10 de noviembre de 2026\n🕚 11:00 h (Madrid)\n💻 Microsoft Teams\n\nPuedes consultar la invitación, unirte a la reunión y añadirla a tu calendario aquí:\n\nhttps://odlc.es/r/${meeting.id}\n\nUn saludo,\n\nIsabel Olivares de la Cerda\nODLC`);
+  assert.equal(meeting.whatsappText, `Hola, María:\n\nTe envío la invitación para nuestra reunión con OdlC.\n\n📅 Martes, 10 de noviembre de 2026\n🕚 11:00 h (Madrid)\n💻 Microsoft Teams\n\nPuedes consultar la invitación, unirte a la reunión y añadirla a tu calendario aquí:\n\nhttps://odlc.es/r/${meeting.id}\n\nUn saludo,\n\nIsabel Olivares de la Cerda\nOdlC`);
   assert.ok(meeting.whatsappLink.startsWith('https://wa.me/34600112233?text=Hola%2C%20Mar%C3%ADa%3A'));
 });
 await t('Los datos persisten y se listan', async () => {
@@ -111,7 +111,7 @@ await t('Invitación: datos, botón de Teams y metadatos Open Graph sin datos pr
   const r = await inv(req('/r/' + meeting.id), ctx({ id: meeting.id }));
   page = await r.text();
   assert.equal(r.status, 200);
-  for (const s of ['Invitación a reunión', 'Reunión con ODLC', 'Isabel Olivares de la Cerda', 'María', 'Martes, 10 de noviembre de 2026', '11:00 – 12:00 h', 'Madrid (UTC+1)', '60 minutos', 'Microsoft Teams · Reunión online', 'Unirse a la reunión', 'Añadir a mi calendario', 'logo-odlc-claro.svg', 'og:image']) assert.ok(page.includes(s), 'falta: ' + s);
+  for (const s of ['Invitación a reunión', 'Reunión con OdlC', 'Isabel Olivares de la Cerda · para María', '10 nov 2026', 'Martes', '11:00 h', 'hasta las 12:00', 'UTC+1', '60 min', 'Microsoft Teams', 'Unirse a la reunión', 'Añadir al calendario', '¿En qué calendario?', 'logo-odlc-claro.svg', 'og:image']) assert.ok(page.includes(s), 'falta: ' + s);
   assert.ok(page.includes(TEAMS.replace(/&/g, '&amp;')));
   const og = page.match(/<meta property="og:[^>]+>/g).join(' ');
   assert.ok(!og.includes('María') && !og.includes('Primera reunión'), 'la vista previa no debe incluir datos de la reunión');
