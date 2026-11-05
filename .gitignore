@@ -1,3 +1,6 @@
 node_modules/
 .netlify/
 .env
+_datos/*
+!_datos/.htaccess
+citas-app/node_modules/

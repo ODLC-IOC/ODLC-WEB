@@ -42,5 +42,6 @@ RewriteRule ^qr_ioc/?$ qr_ioc.html [L]
     Header set X-Robots-Tag "noindex, nofollow"
   </If>
 </IfModule>
-# Atención: /reuniones, /r/... y /api/... necesitan las funciones de Netlify.
-# En Hostinger (Apache) solo funcionan la tarjeta, el QR y la vCard.
+# Reuniones y reservas: viven en citas.odlc.es (carpeta citas/)
+RewriteRule ^reuniones/?$ https://citas.odlc.es/panel [R=302,L]
+RewriteRule ^cita/?$ https://citas.odlc.es/ [R=302,L]

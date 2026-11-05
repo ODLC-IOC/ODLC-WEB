@@ -1,6 +1,6 @@
 /* ODLC · Tarjeta digital, tarjeta QR, invitaciones y panel de reuniones.
    Se carga después de styles.css: reutiliza sus tipografías (Lora, Poppins) y sus colores (:root). */
-body.t-page{min-height:100vh;min-height:100svh;margin:0;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--stone);color:var(--ink)}
+.t-page{min-height:100vh;min-height:100svh;margin:0;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:var(--stone);color:var(--ink)}
 .t-card{width:100%;max-width:440px;background:var(--white);border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(23,48,42,.14)}
 .t-head{background:var(--green);padding:28px 28px 24px;text-align:center;position:relative}
 .t-head::after{content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:56px;height:3px;background:var(--brass)}
@@ -28,7 +28,7 @@ body.t-page{min-height:100vh;min-height:100svh;margin:0;display:flex;align-items
 .q-hint{margin:18px 0 0;font-size:13px;color:var(--green);letter-spacing:.4px}
 .q-actions{margin-top:6px}
 @media (max-width:380px){.t-body{padding:26px 18px 24px}.t-head{padding:28px 22px 26px}}
-@media print{body.t-page{background:#fff}.t-card{box-shadow:none}.no-print{display:none!important}}
+@media print{.t-page{background:#fff}.t-card{box-shadow:none}.no-print{display:none!important}}
 
 /* Invitación a reunión: resumen esquemático */
 .r-eyebrow{margin:0 0 8px;font-size:12.5px;letter-spacing:.3px;color:var(--brass);font-weight:600}
@@ -70,7 +70,7 @@ body.t-page{min-height:100vh;min-height:100svh;margin:0;display:flex;align-items
 .r-ms{flex:0 0 auto;font-size:12px;color:var(--muted)}
 
 /* Panel privado */
-body.p-page{margin:0;background:var(--stone-2);color:var(--ink);min-height:100vh}
+.p-page{margin:0;background:var(--stone-2);color:var(--ink);min-height:100vh}
 .p-top{background:var(--green);border-bottom:3px solid var(--brass)}
 .p-top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:72px;max-width:980px}
 .p-top img{width:96px;height:auto}

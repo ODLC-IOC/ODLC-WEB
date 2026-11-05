@@ -1,10 +1,6 @@
 [build]
   publish = "."
 
-# Funciones del servidor (reuniones, invitaciones y API privada): netlify/functions
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
 
 [[headers]]
   for = "/*"
@@ -106,7 +102,6 @@
 
 
 # Tarjeta digital y tarjeta QR con URL limpia (05/11/2026).
-# /reuniones, /r/:id y /api/* los sirven las funciones (netlify/functions).
 [[redirects]]
   from = "/vcard_ioc"
   to = "/vcard_ioc.html"

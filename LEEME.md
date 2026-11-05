@@ -88,69 +88,65 @@ En `red-de-colaboradores.html` cada área con partner lleva ficha propia (clase 
 5. Eventos clave dados de alta: `mapa_completado`, `file_download`, `gracias.html` (solicitud por formulario) y `newsletter-gracias.html`. Añadir `reservar_sesion` (clic en Microsoft Bookings, con el parámetro `tipo`: `sesion_gratuita` o `arranque_diagnostico`), porque la mayoría de las reservas ya no pasan por `gracias.html`.
 6. ID de medición configurado: `G-DY3P85H57T`.
 
-## Tarjeta digital, QR y reuniones (05/11/2026)
+## Tarjeta digital, QR, reservas y reuniones (05/11/2026)
 
 ### Rutas
 
-| URL | Qué es | Archivo |
+| URL | Qué es | Dónde |
 |---|---|---|
-| `/vcard_ioc` | Tarjeta de visita digital (noindex, fuera del menú) | `vcard_ioc.html` |
-| `/qr_ioc` | Tarjeta QR para enseñarla desde el móvil | `qr_ioc.html` |
-| `/reuniones` | Panel privado de reuniones (exige sesión) | `netlify/functions/panel.mjs` |
-| `/r/:id` y `/r/:id/calendario.ics` | Invitación pública y su archivo de calendario (solo lectura) | `netlify/functions/invitacion.mjs` |
-| `/api/...` | Operaciones del panel: acceso, reuniones, Microsoft 365 | `netlify/functions/api.mjs` |
+| `odlc.es/vcard_ioc` | Tarjeta de visita digital (noindex, fuera del menú) | `vcard_ioc.html` |
+| `odlc.es/qr_ioc` | Tarjeta QR para enseñarla desde el móvil | `qr_ioc.html` |
+| `citas.odlc.es/` | Página de reservas para clientes (React) | `citas/` |
+| `citas.odlc.es/panel` | Panel privado de reuniones (React; exige sesión) | `citas/` |
+| `citas.odlc.es/r/:id` | Invitación pública, `.ics` y materiales (solo lectura) | `citas/api/r.php` |
+| `citas.odlc.es/api/...` | API PHP: acceso, reuniones, Microsoft 365, reservas | `citas/api/index.php` |
+| `odlc.es/reuniones`, `odlc.es/cita` | Redirigen al panel y a la página de reservas | `.htaccess` |
 
-- vCard 3.0 real: `assets/descargas/isabel-olivares-de-la-cerda-odlc.vcf` (UTF-8, nombre y apellidos separados, ODLC, móvil, correo, web, LinkedIn y Madrid, España; sin cargo). La usan la tarjeta y el botón «Guardar contacto · vCard» bajo la foto de Quiénes somos.
-- QR permanente a `https://odlc.es/vcard_ioc`: `assets/img/qr/qr-vcard-ioc.svg` y `.png`; tarjeta QR descargable: `assets/img/qr/tarjeta-qr-isabel-olivares-odlc.png`. Mientras no cambie la URL, el QR no caduca.
-- Estilos: `assets/css/tarjeta.css` (se carga después de `styles.css` y usa sus tipografías y colores). Logotipo original: `logo-odlc-claro.svg` sobre verde y `logo-odlc.svg` sobre blanco.
-- Vista previa en WhatsApp de las invitaciones: `assets/img/og/invitacion-odlc.png` (sin datos de la reunión).
-- LinkedIn corregido en toda la web: `https://www.linkedin.com/in/isabel-olivares-de-la-cerda/`.
+- vCard 3.0 real: `assets/descargas/isabel-olivares-de-la-cerda-odlc.vcf` (empresa «OdlC», sin cargo). Botón «Guardar contacto · vCard» bajo la foto de Quiénes somos.
+- QR permanente a `https://odlc.es/vcard_ioc`: `assets/img/qr/`. Tarjeta QR descargable incluida.
+- La marca se escribe **OdlC** (nunca en mayúsculas con CSS).
+- LinkedIn: `https://www.linkedin.com/in/isabel-olivares-de-la-cerda/` en toda la web.
 
-### Requisitos de publicación
+### Cómo se publica
 
-El panel y las invitaciones funcionan con **Netlify Functions** y **Netlify Blobs** (datos guardados en la UE, Fráncfort). Para que Netlify instale `@netlify/blobs` y publique las funciones, el sitio tiene que estar **enlazado al repositorio de GitHub** (Site configuration → Build & deploy → Link repository) o publicarse con `netlify deploy`. La subida manual arrastrando la carpeta no publica funciones. En Hostinger solo funcionarían la tarjeta, el QR y la vCard (reglas en `.htaccess`).
+Hostinger copia la rama `main` de GitHub en `public_html` (webhook). El subdominio `citas.odlc.es` apunta a `public_html/citas`. La app React se edita en `citas-app/` y se compila con `npm run citas` (genera `citas/index.html` y `citas/app/`); el resultado compilado se sube a Git para que Hostinger no tenga que compilar nada. La API es PHP 8 (cURL, intl y sodium, incluidos en Hostinger).
 
-### Variables de entorno (Netlify → Project configuration → Environment variables)
+### Datos y claves
 
-Nunca en el repositorio. Para generar o cambiar la contraseña: `npm install` y `npm run claves` (pide la contraseña sin mostrarla y devuelve el hash).
+En `public_html/_datos/` (fuera de Git, bloqueado con `.htaccess`): `config.php` con las claves, y las reuniones, materiales y conexión con Microsoft. `config.php`:
 
-| Variable | Valor |
-|---|---|
-| `ODLC_ADMIN_EMAIL` | `isabel@odlc.es` |
-| `ODLC_ADMIN_PASSWORD_HASH` | Hash scrypt de la contraseña (no la contraseña) |
-| `ODLC_SESSION_SECRET` | Cadena aleatoria de 48 bytes |
-| `ODLC_TOKEN_KEY` | 32 bytes aleatorios en base64 (cifra el token de Microsoft) |
-| `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | De Microsoft Entra ID (ver abajo). Marcar `MS_CLIENT_SECRET` como secreto |
+```php
+<?php return [
+  'admin_email' => 'isabel@odlc.es',
+  'password_hash' => '…',      // password_hash() de PHP, nunca la contraseña
+  'session_secret' => '…',     // 64 caracteres aleatorios
+  'token_key' => '…',          // 32 bytes en base64 (cifra el token de Microsoft)
+  'site_url' => 'https://citas.odlc.es',
+  'ms_tenant_id' => '', 'ms_client_id' => '', 'ms_client_secret' => '',
+  'auto_bookings' => true,     // convertir solas las reservas de Bookings
+];
+```
 
-Tras crear o cambiar variables, hacer un nuevo deploy.
+Para cambiar la contraseña: `php -r 'echo password_hash("NUEVA", PASSWORD_DEFAULT);'` y sustituir `password_hash` (Administrador de archivos de Hostinger).
 
 ### Seguridad
 
-- Contraseña solo como hash scrypt en el servidor; sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, firmada y de 8 horas; bloqueo de 15 minutos tras 5 intentos fallidos; las peticiones que cambian datos deben venir de odlc.es.
-- Sin sesión, `/reuniones` solo entrega la pantalla de acceso, y la API responde 401.
-- Identificadores de invitación aleatorios de 128 bits. La invitación muestra nombre del invitado, asunto, fecha, enlace de Teams y la descripción; nunca su correo, su móvil ni las notas privadas.
-- El token de Microsoft se guarda cifrado (AES-256-GCM) en el servidor; el navegador no lo recibe nunca.
+Contraseña solo como hash; sesión en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, firmada, de 8 horas; bloqueo de 15 minutos tras 5 fallos; peticiones que cambian datos solo desde el propio sitio. Identificadores de 128 bits. La invitación nunca muestra correo, móvil ni notas privadas. Token de Microsoft cifrado con libsodium. Reservas: casilla de privacidad, campo trampa contra robots y máximo 4 reservas por hora e IP.
 
-### Microsoft 365 (modo automático): registrar la aplicación en Microsoft Entra ID
+### Microsoft 365: registrar la aplicación en Microsoft Entra ID
 
-1. Entrar en https://entra.microsoft.com con una cuenta administradora de odlc.es → **Identity → Applications → App registrations → New registration**.
-2. Nombre: `ODLC Reuniones`. Supported account types: **Accounts in this organizational directory only (Single tenant)**. Redirect URI: plataforma **Web**, `https://odlc.es/api/ms/callback`. **Register**.
-3. En **Overview**, copiar *Application (client) ID* → `MS_CLIENT_ID` y *Directory (tenant) ID* → `MS_TENANT_ID`.
-4. **Certificates & secrets → Client secrets → New client secret** (24 meses). Copiar el **Value** (solo se ve una vez) → `MS_CLIENT_SECRET`. Apuntar en el calendario renovarlo antes de que caduque.
-5. **API permissions → Add a permission → Microsoft Graph → Delegated permissions**: `openid`, `offline_access`, `User.Read`, `Calendars.ReadWrite`. Pulsar **Grant admin consent for ODLC** (opcional, pero evita la pantalla de consentimiento).
-6. No hace falta ningún permiso de aplicación ni `OnlineMeetings`: el evento se crea en el calendario de isabel@odlc.es con `isOnlineMeeting` y Teams genera el enlace.
-7. Guardar las variables en Netlify, nuevo deploy, entrar en `/reuniones` → **Conectar con Microsoft 365** → entrar con isabel@odlc.es. El panel comprueba en ese momento que el calendario admite Teams (`allowedOnlineMeetingProviders`) y solo acepta la cuenta isabel@odlc.es.
+1. https://entra.microsoft.com → **Identity → Applications → App registrations → New registration**. Nombre `OdlC Citas`; *Single tenant*; Redirect URI **Web** `https://citas.odlc.es/api/ms/callback`.
+2. Copiar *Application (client) ID* → `ms_client_id` y *Directory (tenant) ID* → `ms_tenant_id`.
+3. **Certificates & secrets → New client secret** (24 meses) → copiar el **Value** → `ms_client_secret`. Apuntar su renovación.
+4. **API permissions → Microsoft Graph → Delegated**: `openid`, `offline_access`, `User.Read`, `Calendars.ReadWrite` → **Grant admin consent**.
+5. En el panel: **Conectar con Microsoft 365** con isabel@odlc.es. Se comprueba que el calendario admite Teams y solo se acepta esa cuenta.
 
-Al editar una reunión automática se actualiza el evento de Outlook; al cancelarla se cancela (o se elimina si no tenía asistentes). La casilla «Enviar también la convocatoria de Outlook» añade al invitado como asistente y Outlook le envía el correo.
+### Qué hace la conexión
+
+- **Modo automático:** crea el evento en Outlook con Teams; el evento lleva el enlace de la invitación y de la tarjeta.
+- **Citas de Outlook y Bookings:** el panel lista las reuniones de Teams de los próximos 60 días. Las reservas de Bookings (detectadas por el texto «Bookings»/«reserva») se convierten solas al abrir el panel o con la tarea programada; las demás, con «Crear invitación». El enlace se añade al principio del cuerpo del evento sin tocar el bloque de Teams (si el evento tiene invitados, Outlook puede enviarles la actualización).
+- **Página de reservas `citas.odlc.es`:** muestra los huecos libres de tu calendario (L–J 9:30–14:00 y 16:00–18:30, V 9:30–14:00, 24 h de antelación, 21 días, 15 min de margen; se cambia en `_datos/reservas.json`). Al confirmar, crea el evento con Teams en tu Outlook, Outlook envía la convocatoria al cliente y se abre su invitación. Microsoft no permite crear citas por programa en la página personal «Bookings with me»; por eso la reserva va directa a tu calendario.
 
 ### Pruebas
 
-`npm install && npm test` ejecuta 30 pruebas sin red: horario de verano e invierno, acceso, bloqueo, validación, persistencia, invitación, `.ics`, Google Calendar, WhatsApp, edición, cancelación y el flujo de Microsoft Graph simulado.
-
-### Novedades del panel (05/11/2026, tarde)
-
-- **Asistentes de OdlC**: campo propio (uno por línea); por defecto, Isabel. Aparecen en la invitación y en el calendario.
-- **Materiales**: archivos PDF, Word, Excel, PowerPoint, imágenes, texto o CSV de hasta 4 MB (límite de Netlify Functions), guardados en Netlify Blobs y descargables desde la invitación (`/r/:id/material/:idArchivo`); se ocultan si la reunión se cancela. Para archivos grandes o que vayan a cambiar, pegar un **enlace de OneDrive o SharePoint** (compartido como «Cualquier persona con el vínculo puede ver»): el invitado siempre abre la última versión.
-- **Importar de Outlook (.ics)**: rellena asunto, fecha, hora (convierte la zona de Outlook, p. ej. «Romance Standard Time»), duración, enlace de Teams y descripción.
-- **Pegar la invitación de Teams entera** en el campo del enlace: se queda solo con el enlace.
-- Invitación esquemática (fecha, hora, zona, duración) y «Añadir al calendario» abre un selector.
+`citas-app/pruebas/`: servidor PHP local, Microsoft simulado y 20 comprobaciones de extremo a extremo (todas superadas el 05/11/2026).
