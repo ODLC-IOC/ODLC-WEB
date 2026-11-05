@@ -1,8 +1,5 @@
 {
   "name": "odlc-web",
   "private": true,
-  "description": "Web de OdlC (estática). La app de citas está en citas-app/ y se compila en citas/ (citas.odlc.es).",
-  "scripts": {
-    "citas": "cd citas-app && npm install && npm run build"
-  }
+  "description": "Web de OdlC (estática). La app de citas está en el repositorio ODLC-IOC/ODLC-CITAS (citas.odlc.es)."
 }
