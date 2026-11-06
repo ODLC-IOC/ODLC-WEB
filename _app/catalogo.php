@@ -14,12 +14,12 @@ return [
         // Lo único que se abre además desde la presentación del cliente
         'compartida_extra' => ['informe' => 'presentaciones/in-vest/branding-invest.html', 'informe.pdf' => 'presentaciones/in-vest/Informe_de_marca_IN-VEST.pdf'],
         'items' => [
-          ['archivo' => 'presentaciones/in-vest/OdlC_para_IN-VEST.html', 'titulo' => 'Presentación para el cliente · archivo', 'nota' => 'Sin precios, con menú de secciones y el informe de marca en PDF dentro. Para descargar y llevar sin conexión.', 'tipo' => 'Cliente', 'descarga' => true],
-          ['archivo' => 'presentaciones/in-vest/guion.html', 'titulo' => 'Guión completo', 'nota' => 'Versión larga con las hojas de precios. Tecla N: notas del ponente.', 'tipo' => 'Interno'],
-          ['archivo' => 'presentaciones/in-vest/branding-invest.html', 'titulo' => 'Informe de marca · web', 'nota' => 'Con los logotipos desplegables.', 'tipo' => 'Interno'],
-          ['archivo' => 'presentaciones/in-vest/Informe_de_marca_IN-VEST.pdf', 'titulo' => 'Informe de marca · PDF', 'nota' => 'Igual que la web, en una sola página continua.', 'tipo' => 'PDF', 'descarga' => true],
-          ['archivo' => 'presentaciones/in-vest/contrato-gestion.html', 'titulo' => 'Generador del contrato de gestión', 'nota' => 'Operación, partes, importes y funciones. Descarga el Word.', 'tipo' => 'Herramienta'],
-          ['archivo' => 'presentaciones/in-vest/Contrato_de_gestion_operativa_plantilla.docx', 'titulo' => 'Contrato de gestión · plantilla Word', 'nota' => 'Anónima, con los huecos en amarillo.', 'tipo' => 'Word', 'descarga' => true],
+          ['archivo' => 'presentaciones/in-vest/OdlC_para_IN-VEST.html', 'titulo' => 'Presentación para el cliente', 'nota' => 'Sin precios, con menú de secciones y el informe de marca en PDF dentro. Para descargar y llevar sin conexión.', 'tipo' => 'Cliente', 'descarga' => true, 'cat' => 'presentaciones'],
+          ['archivo' => 'presentaciones/in-vest/guion.html', 'titulo' => 'Guión completo', 'nota' => 'Versión larga con las hojas de precios. Tecla N: notas del ponente.', 'tipo' => 'Interno', 'cat' => 'presentaciones'],
+          ['archivo' => 'presentaciones/in-vest/branding-invest.html', 'titulo' => 'Informe de marca · web', 'nota' => 'Con los logotipos desplegables y el portal con cada logo.', 'tipo' => 'Web', 'cat' => 'informes'],
+          ['archivo' => 'presentaciones/in-vest/Informe_de_marca_IN-VEST.pdf', 'titulo' => 'Informe de marca · PDF', 'nota' => 'Igual que la web, en una sola página continua.', 'tipo' => 'PDF', 'descarga' => true, 'cat' => 'informes'],
+          ['archivo' => 'presentaciones/in-vest/contrato-gestion.html', 'titulo' => 'Generador del contrato de gestión', 'nota' => 'Operación, partes, importes y funciones. Descarga el Word.', 'tipo' => 'Herramienta', 'cat' => 'contratos'],
+          ['archivo' => 'presentaciones/in-vest/Contrato_de_gestion_operativa_plantilla.docx', 'titulo' => 'Contrato de gestión · plantilla Word', 'nota' => 'Anónima, con los huecos en amarillo.', 'tipo' => 'Word', 'descarga' => true, 'cat' => 'contratos'],
         ],
       ],
     ],
