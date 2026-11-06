@@ -1,0 +1,595 @@
+<title>Contrato de Gestión Operativa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Poppins:wght@400;500;600&display=swap">
+<style>
+/* Layout: formulario a la izquierda, el contrato como hoja de papel a la derecha, que se rellena en directo */
+:root{
+  --bg:#FBFAF7; --panel:#FFFFFF; --stone:#F2F0EB; --ink:#1B2622; --muted:#5B6B65; --line:#D9D5CB;
+  --green:#17302A; --brass:#A8843F; --brass-ink:#7A5C22; --brass-soft:#EFE6D2; --mark:#F6E7A8; --mark-ink:#5a4510;
+  --paper:#FFFFFF; --paper-ink:#1B2622;
+  --serif:'Lora', Georgia, 'Times New Roman', serif; --sans:'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121816; --panel:#1A2320; --stone:#1F2925; --ink:#E9E6DE; --muted:#A3AFA9; --line:#33413B;
+  --green:#D9E4DE; --brass:#C9A962; --brass-ink:#D8BD7E; --brass-soft:#2E2A1F; --mark:#5A4A18; --mark-ink:#F3E3AE;
+  --paper:#1E2724; --paper-ink:#E9E6DE; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121816; --panel:#1A2320; --stone:#1F2925; --ink:#E9E6DE; --muted:#A3AFA9; --line:#33413B;
+  --green:#D9E4DE; --brass:#C9A962; --brass-ink:#D8BD7E; --brass-soft:#2E2A1F; --mark:#5A4A18; --mark-ink:#F3E3AE;
+  --paper:#1E2724; --paper-ink:#E9E6DE; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:1400px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-ink)}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,40px);line-height:1.1;color:var(--green);margin:6px 0 4px;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:10px 16px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+button.primary{background:var(--green);color:var(--bg);border-color:var(--green);font-weight:500}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.status{font-size:13px;color:var(--muted);min-height:1.2em;width:100%;text-align:right}
+.grid{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
+form{display:flex;flex-direction:column;gap:14px}
+fieldset{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:16px 18px 18px;margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
+legend{font-family:var(--serif);font-size:19px;color:var(--green);padding:0 6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.row{grid-template-columns:1fr}}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);min-width:0}
+input,select,textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+textarea{min-height:64px;resize:vertical}
+.check{flex-direction:row;align-items:flex-start;gap:8px;color:var(--ink);font-size:14px}
+.check input{width:auto;margin-top:3px;accent-color:var(--green)}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.sub{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brass-ink);margin:6px 0 -2px}
+.fx{display:flex;flex-direction:column;gap:6px}
+.fx .add{background:var(--brass-soft);border-radius:8px;padding:10px 12px}
+.sheet-wrap{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);min-width:0}
+.sheet{background:var(--paper);color:var(--paper-ink);border:1px solid var(--line);border-radius:4px;box-shadow:0 1px 0 var(--line),0 12px 32px -18px rgba(23,48,42,.35);
+  padding:clamp(20px,5vw,64px) clamp(18px,5vw,72px);max-height:calc(100vh - 48px);overflow:auto;font-family:'Times New Roman',Times,serif;font-size:15.5px;line-height:1.55}
+.sheet .t{text-align:center;font-weight:700;font-size:20px;margin:8px 0 18px;letter-spacing:.02em}
+.sheet .c{text-align:center;font-weight:700;margin:4px 0}
+.sheet .h0{text-align:center;font-weight:700;margin:26px 0 12px}
+.sheet .h{font-weight:700;text-transform:uppercase;margin:22px 0 8px}
+.sheet p{margin:0 0 9px;text-align:justify;hyphens:auto}
+.sheet .s2{font-weight:700;margin:12px 0 6px 20px}
+.sheet .li{margin-left:40px}
+.sheet mark{background:var(--mark);color:var(--mark-ink);padding:0 2px;border-radius:2px}
+.sheet .sign{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:20px}
+.sheet .sign div{padding-top:70px;border-bottom:0}
+.sheet .sign span{display:block;border-top:1px solid currentColor;padding-top:4px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--stone);padding:12px 16px;margin-top:14px}
+summary{cursor:pointer;font-weight:500;color:var(--green)}
+details ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">OdlC · Plantillas</div>
+      <h1>Contrato de gestión operativa</h1>
+      <p class="lede">Rellena la operación, las partes y los honorarios, y marca las funciones que asume la gestora. El contrato se redacta a la derecha y se descarga en Word para seguir editándolo.</p>
+    </div>
+    <div class="actions">
+      <button type="button" id="b-ejemplo">Cargar ejemplo</button>
+      <button type="button" id="b-limpiar">Vaciar</button>
+      <button type="button" class="primary" id="b-word">Descargar Word</button>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <form id="f" autocomplete="off">
+      <fieldset>
+        <legend>Operación</legend>
+        <label>Objeto de la Sociedad u operación<textarea id="operacion" placeholder="la adquisición, gestión y posterior venta de un edificio de oficinas en Madrid"></textarea></label>
+        <label>Activos (uno por línea, van al Anexo I)<textarea id="activos" placeholder="Edificio en C/ …, finca registral …, ref. catastral …"></textarea></label>
+        <label>Relación entre las partes (opcional)<input id="relacion" placeholder="y es socia de la Sociedad"></label>
+        <div class="row">
+          <label>Lugar de firma<input id="lugar"></label>
+          <label>Fecha<input id="fecha" placeholder="1 de enero de 2027"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Gestora</legend>
+        <div class="row"><label>Denominación<input id="g_nombre"></label><label>Forma social<input id="g_forma" value="S.L."></label></div>
+        <label>Domicilio social<input id="g_domicilio"></label>
+        <div class="row"><label>NIF<input id="g_nif"></label><label>Registro Mercantil (datos)<input id="g_registro" placeholder="Madrid, tomo …, folio …, hoja M-…"></label></div>
+        <div class="row"><label>Representante<input id="g_rep"></label><label>Cargo<input id="g_cargo" placeholder="administradora única"></label></div>
+        <label>Correo para notificaciones<input id="email_g" type="email"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sociedad gestionada</legend>
+        <div class="row"><label>Denominación<input id="s_nombre"></label><label>Forma social<input id="s_forma" value="S.L."></label></div>
+        <label>Domicilio social<input id="s_domicilio"></label>
+        <div class="row"><label>NIF<input id="s_nif"></label><label>Registro Mercantil (datos)<input id="s_registro"></label></div>
+        <div class="row"><label>Representante<input id="s_rep"></label><label>Cargo<input id="s_cargo"></label></div>
+        <label>Correo para notificaciones<input id="email_s" type="email"></label>
+        <label class="check"><input type="checkbox" id="cotizada"> La Sociedad cotiza (BME Growth u otro mercado)</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Duración</legend>
+        <div class="row">
+          <label>Periodo obligatorio (años)<input id="duracion" inputmode="numeric" value="1"></label>
+          <label>Prórrogas de (años)<input id="prorroga" inputmode="numeric" value="1"></label>
+        </div>
+        <div class="row">
+          <label>Preaviso de no prórroga (meses)<input id="preaviso" inputmode="numeric" value="1"></label>
+          <label>Plazo para subsanar (días)<input id="subsanacion" inputmode="numeric" value="30"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Honorarios</legend>
+        <div class="row">
+          <label>Honorario anual de gestión (€)<input id="honorario" inputmode="decimal" placeholder="78.411,30"></label>
+          <label>Se paga por<select id="periodicidad"><option>mensualidades</option><option>trimestres</option></select></label>
+        </div>
+        <div class="row">
+          <label>Días para pagar la factura<input id="dias_pago" inputmode="numeric" value="5"></label>
+          <label>Gastos generales incluidos (%)<input id="overhead" inputmode="decimal" placeholder="10"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="ipc" checked> Actualizar cada año con el IPC</label>
+        <p class="sub">Opcionales (vacío = no se incluye)</p>
+        <div class="row">
+          <label>Estructuración, a la firma (€)<input id="setup" inputmode="decimal"></label>
+          <label>Adquisición (% del precio)<input id="adquisicion" inputmode="decimal"></label>
+        </div>
+        <div class="row">
+          <label>Desinversión (% del precio)<input id="desinversion" inputmode="decimal"></label>
+          <label>Éxito (% de la plusvalía)<input id="exito" inputmode="decimal"></label>
+        </div>
+        <div class="row">
+          <label>Rentabilidad preferente (% anual)<input id="hurdle" inputmode="decimal"></label>
+          <label>Demora (puntos sobre el interés legal)<input id="demora" inputmode="decimal" value="2"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="claseB"> El éxito se cobra con acciones de clase B (sustituye al % de éxito)</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Protección y límites</legend>
+        <label class="check"><input type="checkbox" id="indemnizacion" checked> Si la Sociedad sale sin causa, paga los honorarios que faltan del periodo</label>
+        <label class="check"><input type="checkbox" id="cambio_control" checked> Salida por cambio de control, con compensación a la gestora</label>
+        <div class="row">
+          <label>Importe que requiere aprobación del consejo (€)<input id="limite" inputmode="decimal"></label>
+          <label>Seguro de RC de la gestora (€)<input id="seguro" inputmode="decimal"></label>
+        </div>
+        <label>Juzgados de<input id="plaza" value="Madrid"></label>
+      </fieldset>
+
+      <fieldset id="fs-funciones">
+        <legend>Funciones de la gestora</legend>
+        <p class="hint">Marcadas por defecto todas las del contrato original. Las de la última sección son añadidas por OdlC.</p>
+        <div id="funciones" class="fx"></div>
+      </fieldset>
+    </form>
+
+    <div class="sheet-wrap">
+      <article class="sheet" id="sheet" aria-label="Vista previa del contrato"></article>
+      <details>
+        <summary>Qué se ha corregido respecto al contrato original</summary>
+        <ol>
+          <li>Traducido y adaptado a la redacción habitual en España (Reunidos, Exponen, Cláusulas) y anonimizado.</li>
+          <li>Cesión: el original decía que cualquiera podía ceder «sin consentimiento». Ahora ninguna parte puede ceder sin consentimiento, salvo la Sociedad a su grupo o a los bancos.</li>
+          <li>Referencias rotas: la cláusula 3.5 no existía, la penalización remitía a la 2.1 en lugar de a la duración y las cláusulas que sobreviven no coincidían con la numeración. La numeración es ahora automática.</li>
+          <li>Gastos generales: se cobraban dos veces (incluidos en el honorario y como gasto aparte). Queda solo dentro del honorario, si se indica.</li>
+          <li>Seguro: aparecía en el índice pero no en el texto. Se añade como cláusula opcional.</li>
+          <li>Se eliminan el párrafo huérfano de «reducción», el fax y la definición de «Grupo» que remitía a una «matriz» no definida.</li>
+          <li>Se añaden protección de datos, poderes notariales para la gestora, límite de importe opcional y honorarios opcionales (estructuración, adquisición, desinversión y éxito o clase B).</li>
+          <li>El interés de demora pasa a calcularse sobre el interés legal del dinero, en lugar del «tipo base del Banco de España».</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script>// Plantilla del Contrato de Gestión Operativa (adaptado del OMA Azaria 2020, anonimizado)
+// Se usa igual en Node (Word) y en el navegador (generador HTML).
+(function (root) {
+  const FUNCIONES = [
+    { grupo: 'Gestión financiera', items: [
+      { id: 'f1', t: 'Informes de financiación', x: 'Supervisar, directamente o a través de terceros, la correcta y puntual elaboración y emisión de los informes de la Sociedad y, en su caso, de sus filiales. Los informes de financiación se elaborarán con periodicidad trimestral y se revisarán anualmente.' },
+      { id: 'f2', t: 'Cuentas anuales y auditoría', x: 'Recabar y tramitar, en nombre de la Sociedad cuando proceda, la información, la documentación y los soportes necesarios para la preparación y formulación de las cuentas anuales, incluida la revisión de los estados financieros de sus filiales; velar por que todos los intervinientes aporten la documentación requerida, y prestar a los auditores la asistencia necesaria para el ejercicio de sus funciones.' },
+      { id: 'f3', t: 'Relación con la entidad financiadora', x: 'Revisar y supervisar el cumplimiento de las obligaciones financieras (covenants) y de información asumidas por la Sociedad en el contrato de financiación o en cualquier otro documento financiero que le resulte aplicable.' },
+      { id: 'f4', t: 'Asesor registrado y mercado (si la Sociedad cotiza)', x: 'Supervisar la relación con el asesor registrado y con el organismo rector del mercado en el que coticen las acciones de la Sociedad, velando por el cumplimiento de la normativa aplicable y de las obligaciones de información al mercado.', cot: true },
+      { id: 'f5', t: 'Entidad agente (si la Sociedad cotiza)', x: 'Supervisar la relación con la entidad agente en todo lo relativo a la cotización de las acciones de la Sociedad.', cot: true },
+      { id: 'f6', t: 'Tesorería y flujos de caja consolidados', x: 'Procurar que los flujos de caja consolidados se ajusten a la normativa vigente y queden correctamente reflejados y comunicados a quienes corresponda.' },
+      { id: 'f7', t: 'Distribución de dividendos', x: 'Estructurar el pago de dividendos y organizar su correcta distribución a favor de los socios o accionistas de la Sociedad.' },
+    ]},
+    { grupo: 'Inversión y desinversión', items: [
+      { id: 'i1', t: 'Análisis de nuevas inversiones', x: 'Analizar y estudiar las oportunidades de inversión y desinversión; cuantificar las inversiones, calcular las necesidades de financiación y la rentabilidad esperada, y preparar las cartas de intenciones, los modelos de negocio y cualquier otra documentación necesaria para cada oportunidad.' },
+      { id: 'i2', t: 'Captación de fondos', x: 'Organizar, planificar y desarrollar el plan de captación de fondos para las nuevas adquisiciones, incluida la redacción de los memorandos de inversión y de la documentación de soporte que se requiera.' },
+      { id: 'i3', t: 'Apoyo a las decisiones del órgano de administración', x: 'Asesorar y asistir al Órgano de Administración en todas las decisiones que requieran aprobación societaria relativas a nuevas inversiones, refinanciaciones o acciones del Plan de Negocio, y facilitarle los informes necesarios para que decida con pleno conocimiento y con cumplimiento de los requisitos y formalidades societarios aplicables.' },
+    ]},
+    { grupo: 'Gestión ordinaria y representación', items: [
+      { id: 'g1', t: 'Servicios generales', x: 'Gestionar y, en su caso, subcontratar los servicios necesarios para las oficinas, instalaciones y equipos (mantenimiento, limpieza, seguridad y similares), en la medida en que sean necesarios para la prestación de los Servicios.' },
+      { id: 'g2', t: 'Proveedores y facturación', x: 'Gestionar los proveedores: seguimiento y preparación de las órdenes de pago de sus facturas y de cualquier otro gasto de la Sociedad, incluida la emisión y el control de facturas, recibos y demás documentos mercantiles y societarios relacionados.' },
+      { id: 'g3', t: 'Cobros e impagados', x: 'Controlar los cobros y hacer el seguimiento de los expedientes de impago.' },
+      { id: 'g4', t: 'Tasaciones y due diligence', x: 'Gestionar y contratar las tasaciones de los activos y las revisiones (due diligence) comerciales, legales y técnicas, incluida la contratación de abogados para negociar y cerrar las operaciones de inversión y desinversión.' },
+      { id: 'g5', t: 'Representación ante terceros', x: 'Representar y actuar en nombre de la Sociedad ante las administraciones públicas, los proveedores y cualesquiera terceros, incluida la conducción de las negociaciones necesarias, en coordinación con el Órgano de Administración.' },
+      { id: 'g6', t: 'Fianzas y garantías de los arrendatarios', x: 'Coordinar el depósito de las fianzas y demás garantías aportadas por los arrendatarios (avales y otras), así como sus devoluciones y actualizaciones, y gestionar ante el organismo autonómico competente el depósito y la liquidación de las fianzas legales derivadas de los contratos de arrendamiento.' },
+      { id: 'g7', t: 'Certificados de eficiencia energética', x: 'Gestionar la obtención de los certificados de eficiencia energética emitidos por técnicos competentes.' },
+    ]},
+    { grupo: 'Funciones añadidas (no estaban en el contrato original)', items: [
+      { id: 'a1', t: 'Secretaría societaria', x: 'Llevar la secretaría societaria de la Sociedad: preparación de convocatorias y actas de juntas y del Órgano de Administración, llevanza de los libros obligatorios, depósito de cuentas e inscripciones registrales.' },
+      { id: 'a2', t: 'Prevención del blanqueo y cumplimiento normativo', x: 'Asistir a la Sociedad en el cumplimiento de la normativa de prevención del blanqueo de capitales y de la financiación del terrorismo y de los demás requisitos regulatorios que le resulten aplicables, incluida la identificación de las contrapartes y la conservación de la documentación.' },
+      { id: 'a3', t: 'Información a socios e inversores', x: 'Elaborar y remitir a los socios o inversores informes periódicos sobre la evolución de la inversión, con la periodicidad que acuerde el Órgano de Administración.' },
+      { id: 'a4', t: 'Gestión de arrendamientos', x: 'Gestionar los contratos de arrendamiento de los activos: negociación, renovaciones, actualizaciones de renta, repercusión de gastos y relación con los arrendatarios.' },
+    ]},
+  ];
+
+  const DEFAULTS = {
+    lugar: '', fecha: '',
+    g_nombre: '', g_forma: 'S.L.', g_domicilio: '', g_nif: '', g_registro: '', g_rep: '', g_cargo: '',
+    s_nombre: '', s_forma: 'S.L.', s_domicilio: '', s_nif: '', s_registro: '', s_rep: '', s_cargo: '',
+    operacion: '', activos: '', relacion: '',
+    duracion: '1', prorroga: '1', preaviso: '1',
+    honorario: '', ipc: true, overhead: '', periodicidad: 'mensualidades', dias_pago: '5',
+    setup: '', adquisicion: '', desinversion: '', exito: '', hurdle: '', claseB: false,
+    demora: '2', subsanacion: '30', limite: '', seguro: '', cambio_control: true, indemnizacion: true,
+    plaza: 'Madrid', email_g: '', email_s: '',
+    funciones: null, // null = todas menos las de sociedad cotizada
+    cotizada: false,
+  };
+
+  // ⟦texto⟧ marca un dato pendiente de completar
+  const P = (v, label) => (v && String(v).trim()) ? String(v).trim() : '⟦' + label + '⟧';
+  const num = (v) => (v && String(v).trim()) ? String(v).trim() : null;
+  const letra = (i) => 'abcdefghijklmnopqrstuvwxyz'[i];
+
+  function build(input) {
+    const v = Object.assign({}, DEFAULTS, input || {});
+    const sel = v.funciones || FUNCIONES.flatMap(g => g.items).filter(it => !it.cot || v.cotizada).map(it => it.id);
+    const B = []; // bloques: {k:'title'|'center'|'h'|'p'|'sub'|'li'|'sign'}
+    const add = (k, t, extra) => B.push(Object.assign({ k, t }, extra || {}));
+    let n = 0; const C = {}; // numeración dinámica
+    const clause = (key, title) => { n++; C[key] = n; add('h', n + '. ' + title); return n; };
+
+    add('title', 'CONTRATO DE GESTIÓN OPERATIVA');
+    add('center', 'entre');
+    add('center', P(v.g_nombre, 'GESTORA'));
+    add('center', 'y');
+    add('center', P(v.s_nombre, 'SOCIEDAD'));
+    add('p', 'En ' + P(v.lugar, 'lugar') + ', a ' + P(v.fecha, 'fecha') + '.');
+
+    add('h0', 'REUNIDOS');
+    add('p', 'De una parte, ' + P(v.g_rep, 'nombre del representante') + ', en su condición de ' + P(v.g_cargo, 'cargo') + ', en nombre y representación de ' + P(v.g_nombre, 'GESTORA') + ', ' + P(v.g_forma, 'forma social') + ', con domicilio social en ' + P(v.g_domicilio, 'domicilio') + ', con NIF ' + P(v.g_nif, 'NIF') + ' e inscrita en el Registro Mercantil de ' + P(v.g_registro, 'datos registrales') + ' (en adelante, la «Gestora»).');
+    add('p', 'De otra parte, ' + P(v.s_rep, 'nombre del representante') + ', en su condición de ' + P(v.s_cargo, 'cargo') + ', en nombre y representación de ' + P(v.s_nombre, 'SOCIEDAD') + ', ' + P(v.s_forma, 'forma social') + ', con domicilio social en ' + P(v.s_domicilio, 'domicilio') + ', con NIF ' + P(v.s_nif, 'NIF') + ' e inscrita en el Registro Mercantil de ' + P(v.s_registro, 'datos registrales') + ' (en adelante, la «Sociedad»).');
+    add('p', 'La Gestora y la Sociedad (conjuntamente, las «Partes» y, cada una de ellas, una «Parte») se reconocen mutuamente la capacidad legal necesaria para otorgar el presente contrato (el «Contrato») y, a tal efecto,');
+
+    add('h0', 'EXPONEN');
+    add('p', 'I. Que la Gestora se dedica, entre otras actividades, a la gestión de sociedades y patrimonios inmobiliarios y cuenta con la experiencia y los medios adecuados para prestar los servicios que se describen en este Contrato' + (num(v.relacion) ? ', ' + v.relacion.trim() : '') + '.');
+    add('p', 'II. Que la Sociedad tiene por objeto ' + P(v.operacion, 'descripción de la operación o de la actividad de la Sociedad') + (num(v.activos) ? ', y es titular de los activos que se relacionan en el Anexo I (los «Activos»)' : '') + '.');
+    add('p', 'III. Que las Partes desean establecer los términos y condiciones en los que la Gestora prestará a la Sociedad servicios de gestión operativa, con efectos desde la fecha de este Contrato, y a tal fin lo otorgan con arreglo a las siguientes');
+
+    add('h0', 'CLÁUSULAS');
+
+    // 1
+    clause('def', 'Definiciones e interpretación');
+    add('sub', n + '.1. Salvo que el contexto exija otra cosa, los términos siguientes tendrán en este Contrato el significado que se indica:');
+    [
+      ['Activos', 'los bienes inmuebles y demás activos de la Sociedad' + (num(v.activos) ? ' relacionados en el Anexo I' : '') + '.'],
+      ['Arrendatario', 'cualquier arrendatario de los Activos.'],
+      ['Control', 'el definido en el artículo 42 del Código de Comercio.'],
+      ['Día Hábil', 'cualquier día en que los bancos estén abiertos al público en ' + P(v.plaza, 'plaza') + '.'],
+      ['Entidad Financiadora', 'cualquier entidad que haya concedido financiación a la Sociedad o a la Gestora, según el caso.'],
+      ['Firmante Autorizado', 'cualquier persona designada en cada momento por la Sociedad para dar instrucciones a la Gestora y cuya firma se haya comunicado a esta.'],
+      ['Grupo', 'la Sociedad y las entidades que la Controlen, estén Controladas por ella o estén bajo Control común con ella.'],
+      ['Órgano de Administración', 'el órgano de administración de la Sociedad en cada momento.'],
+      ['Persona', 'cualquier persona física o jurídica, entidad sin personalidad jurídica, comunidad, administración u organismo público.'],
+      ['Plan de Negocio', 'el plan de negocio de la Sociedad aprobado en cada momento por su Órgano de Administración.'],
+      ['Servicios', 'los servicios descritos en la Cláusula 3.'],
+    ].forEach(([a, b]) => add('li', '«' + a + '»: ' + b, { b: a }));
+    add('sub', n + '.2. Las referencias a normas legales o reglamentarias se entenderán hechas a las vigentes en cada momento, incluidas sus modificaciones, refundiciones o sustituciones.');
+    add('sub', n + '.3. Las referencias a Cláusulas y Anexos se entienden hechas a las Cláusulas y Anexos de este Contrato. Los títulos de las Cláusulas tienen carácter meramente indicativo y no afectan a su interpretación.');
+
+    // 2
+    clause('obj', 'Objeto, nombramiento y duración');
+    add('sub', n + '.1. La Sociedad designa a la Gestora como gestora operativa, con responsabilidad exclusiva sobre la prestación de los Servicios, siempre con sujeción a las políticas, directrices y control del Órgano de Administración y, en particular, al Plan de Negocio. La Sociedad informará a la Gestora de cualquier modificación del Plan de Negocio que pueda afectar a este Contrato. La Gestora no podrá adoptar ninguna decisión discrecional por cuenta de la Sociedad que no se ajuste al Plan de Negocio. Los Servicios se refieren exclusivamente a las actividades y a los Activos de la Sociedad.');
+    const dur = P(v.duracion, 'n.º');
+    add('sub', n + '.2. El Contrato entra en vigor en la fecha de su firma y tendrá una duración inicial de ' + dur + ' año(s) (el «Periodo Obligatorio»), prorrogándose tácitamente por periodos sucesivos de ' + P(v.prorroga, 'n.º') + ' año(s) salvo que cualquiera de las Partes comunique a la otra, por un medio fehaciente y con al menos ' + P(v.preaviso, 'n.º') + ' mes(es) de antelación al vencimiento, su voluntad de no prorrogarlo. El periodo inicial y cada una de sus prórrogas tendrán carácter obligatorio para ambas Partes, sin perjuicio de lo previsto en la Cláusula ' + '{{res}}' + '.');
+    add('sub', n + '.3. La Gestora se obliga a:');
+    ['emplear en la prestación de los Servicios y en el ejercicio de sus facultades la diligencia de un ordenado empresario y la pericia profesional exigibles;', 'hacer cuanto esté razonablemente a su alcance para que la Sociedad cumpla el Plan de Negocio;', 'servir fielmente los intereses de la Sociedad; y', 'actuar de buena fe.'].forEach((t, i) => add('li', '(' + letra(i) + ') ' + t));
+    add('sub', n + '.4. La Gestora velará, y hará que sus subcontratistas velen, por que la Sociedad no incumpla:');
+    ['sus estatutos sociales;', 'el Plan de Negocio;', 'las instrucciones válidas del Órgano de Administración;', 'cualquier contrato de financiación u otro documento financiero que la obligue;', 'cualquier otro contrato de gestión que la obligue;', 'su régimen fiscal, comprometiéndose la Gestora a no actuar de forma que pueda perjudicarlo; ni', 'cualquier otra cuestión a la que un gestor prudente de una cartera de inversión deba atender, teniendo en cuenta en todo momento que las facultades de la Gestora están limitadas por este Contrato.'].forEach((t, i) => add('li', '(' + letra(i) + ') ' + t));
+
+    // 3
+    clause('serv', 'Funciones de la Gestora');
+    add('sub', n + '.1. Durante la vigencia del Contrato, y sin perjuicio de lo previsto en la Cláusula ' + C.obj + ' y de los límites de la Cláusula {{fac}}, la Gestora prestará a la Sociedad los siguientes Servicios:');
+    let gi = 0;
+    FUNCIONES.forEach(g => {
+      const its = g.items.filter(it => sel.includes(it.id));
+      if (!its.length) return;
+      const gname = g.grupo.replace(' (no estaban en el contrato original)', '');
+      add('sub2', '(' + letra(gi) + ') ' + (gname === 'Funciones añadidas' ? 'Otras funciones de gestión' : gname));
+      its.forEach((it, j) => { const bt = '(' + ['i','ii','iii','iv','v','vi','vii','viii','ix','x'][j] + ') ' + it.t + '.'; add('li', bt + ' ' + it.x, { bt }); });
+      gi++;
+    });
+    add('sub', n + '.2. Las funciones anteriores no tienen carácter exhaustivo. La Gestora prestará los servicios que resulten necesarios para cumplir sus obligaciones en interés de una buena gestión, siempre conforme a este Contrato. La Gestora centralizará la contratación de los servicios que la Sociedad necesite en relación con sus Activos (técnicos, legales, financieros u otros) y que la Gestora no pueda prestar con sus propios medios; dichos servicios serán subcontratados por la Gestora, que podrá repercutir su coste a la Sociedad.');
+    add('sub', n + '.3. La Gestora podrá prestar los Servicios (a) directamente, con sus propios medios, o (b) encargando a terceros la prestación parcial de los Servicios. En el segundo caso, la subcontratación no creará relación jurídica alguna entre la Sociedad y los subcontratistas; la Gestora asumirá todos los riesgos derivados de la subcontratación y seguirá siendo responsable frente a la Sociedad de las actividades de los subcontratistas, que deberán ajustarse a este Contrato.');
+
+    // 4
+    clause('fac', 'Facultades de la Gestora');
+    add('sub', n + '.1. La Gestora tendrá las facultades necesarias para prestar los Servicios, con los límites establecidos en el Plan de Negocio' + (num(v.limite) ? ' y con la obligación de recabar la aprobación previa del Órgano de Administración para cualquier acto o contrato de importe superior a ' + v.limite.trim() + ' euros' : '') + '.');
+    add('sub', n + '.2. En particular, y con sujeción a lo previsto en este Contrato, la Gestora podrá, por cuenta y en nombre de la Sociedad:');
+    ['negociar, celebrar y ejecutar los contratos, acuerdos y compromisos que considere razonablemente necesarios, convenientes o accesorios para los fines de este Contrato;', 'encargar y designar topógrafos, operadores, tasadores, urbanistas, expertos medioambientales, promotores y especialistas de cualquier clase que considere razonablemente necesarios o convenientes;', 'actuar en nombre de la Sociedad, incluida la designación de abogados y procuradores que la representen en cualquier operación y en cualquier procedimiento judicial, administrativo o arbitral relacionado con los Servicios;', 'hacer cuanto esté razonablemente a su alcance para obtener las licencias, permisos y autorizaciones necesarios para la prestación de los Servicios; y', 'preparar, o encargar, la documentación necesaria y, en su caso, someterla a la Sociedad para su firma o elevación a público.'].forEach((t, i) => add('li', '(' + letra(i) + ') ' + t));
+    add('sub', n + '.3. Las facultades conferidas tienen carácter continuado y permanecerán vigentes hasta la terminación del Contrato o hasta que la Sociedad revoque alguna de ellas mediante notificación a la Gestora. La revocación no afectará a las responsabilidades derivadas de operaciones iniciadas con anterioridad.');
+    add('sub', n + '.4. La Sociedad otorgará a favor de la Gestora los poderes notariales y documentos que sean necesarios conforme a la ley para que esta pueda ejercer las facultades indicadas.');
+
+    // 5
+    clause('del', 'Subcontratación y delegación');
+    add('sub', n + '.1. La Gestora podrá, con el consentimiento previo y por escrito de la Sociedad, subcontratar o delegar en las condiciones y en las personas que estime oportunas cualquiera de las funciones y obligaciones que asume en virtud de este Contrato, así como las facultades necesarias para su ejercicio. Los honorarios, costes y gastos de dichas personas serán de cuenta exclusiva de la Gestora, salvo lo previsto en la Cláusula ' + C.serv + '.2. La Gestora velará por que dichas personas cumplan este Contrato en lo que les sea aplicable y responderá de sus actos y omisiones como si fueran propios.');
+    add('sub', n + '.2. La Gestora no podrá delegar la totalidad ni una parte sustancial de sus funciones y seguirá siendo responsable de la gestión operativa de los Servicios.');
+
+    // 6
+    clause('hon', 'Honorarios');
+    let h = 1;
+    add('sub', n + '.' + (h++) + '. Honorario de gestión. Como contraprestación por los Servicios, la Sociedad abonará a la Gestora un honorario anual fijo de ' + P(v.honorario, 'importe') + ' euros' + (v.ipc ? ', que se actualizará el 1 de enero de cada año conforme a la variación del Índice de Precios de Consumo (IPC) general publicada por el Instituto Nacional de Estadística para los doce meses anteriores' : '') + '. El honorario se revisará si se incorporan nuevas funciones a la Cláusula ' + C.serv + '.' + (num(v.overhead) ? ' El honorario incluye un ' + v.overhead.trim() + ' % en concepto de gastos generales de estructura de la Gestora.' : ''));
+    add('sub', n + '.' + (h++) + '. El honorario de gestión se abonará por ' + P(v.periodicidad, 'mensualidades/trimestres') + ' vencidas, dentro de los ' + P(v.dias_pago, 'n.º') + ' días siguientes a la emisión de la correspondiente factura por la Gestora.');
+    if (num(v.setup)) add('sub', n + '.' + (h++) + '. Honorario de estructuración. La Sociedad abonará a la Gestora, a la firma de este Contrato, un honorario único de ' + v.setup.trim() + ' euros por el diseño y la puesta en marcha de la estructura.');
+    if (num(v.adquisicion)) add('sub', n + '.' + (h++) + '. Honorario de adquisición. Por cada Activo que adquiera la Sociedad, la Gestora percibirá un honorario del ' + v.adquisicion.trim() + ' % del precio de adquisición, pagadero en la fecha de otorgamiento de la escritura de compraventa.');
+    if (num(v.desinversion)) add('sub', n + '.' + (h++) + '. Honorario de desinversión. Por cada Activo que transmita la Sociedad, la Gestora percibirá un honorario del ' + v.desinversion.trim() + ' % del precio de venta, pagadero en la fecha de otorgamiento de la escritura de compraventa.');
+    if (num(v.exito) || v.claseB) {
+      if (v.claseB) add('sub', n + '.' + (h++) + '. Comisión de éxito. La participación de la Gestora en el resultado de la inversión se instrumentará mediante acciones o participaciones de clase B de la Sociedad, en los términos previstos en sus estatutos sociales y en el pacto de socios, y no devengará honorario adicional en virtud de este Contrato.');
+      else add('sub', n + '.' + (h++) + '. Comisión de éxito. En cada desinversión, la Gestora percibirá el ' + v.exito.trim() + ' % de la plusvalía obtenida, una vez que los socios hayan recuperado la totalidad de sus aportaciones más una rentabilidad preferente del ' + P(v.hurdle, '%') + ' % anual.');
+    }
+    add('sub', n + '.' + (h++) + '. Las cantidades no satisfechas a su vencimiento devengarán, sin necesidad de requerimiento, un interés de demora igual al interés legal del dinero incrementado en ' + P(v.demora, 'n.º') + ' puntos porcentuales.');
+    add('sub', n + '.' + (h++) + '. Todas las cantidades previstas en este Contrato se entienden sin incluir el Impuesto sobre el Valor Añadido, que la Gestora repercutirá, cuando proceda, al tipo vigente en cada momento.');
+
+    // 7
+    clause('gas', 'Gastos');
+    add('sub', n + '.1. Sin perjuicio de lo previsto en la Cláusula ' + n + '.2, y previa presentación de la factura correspondiente, la Sociedad pagará los siguientes gastos en que la Gestora haya incurrido razonablemente:');
+    ['los costes, honorarios y gastos de los servicios de terceros contratados para la prestación de los Servicios conforme a la Cláusula ' + C.serv + '.2, en la medida en que no se cubran con las cantidades repercutidas por la Sociedad a terceros;', 'los gastos de custodia, seguros y manipulación relacionados con los Servicios y cualesquiera otras primas de seguro razonablemente incurridas respecto de los riesgos que la Sociedad decida asegurar; y', 'cualesquiera otros gastos realizados por cuenta de la Sociedad y aprobados previamente por el Órgano de Administración, incluidos los honorarios de los profesionales contratados por cuenta de la Sociedad.'].forEach((t, i) => add('li', '(' + letra(i) + ') ' + t));
+    add('sub', n + '.2. Salvo que en este Contrato se disponga otra cosa o que la Sociedad lo acuerde, la Gestora prestará los Servicios a su propio coste y, en particular, aportará a su cargo el personal, los consultores, las oficinas y los demás medios necesarios para cumplir sus obligaciones.');
+
+    // 8
+    clause('resp', 'Responsabilidad e indemnidad');
+    add('sub', n + '.1. La Gestora no será responsable de los actos realizados de buena fe conforme a las instrucciones escritas de la Sociedad o de cualquiera de sus Firmantes Autorizados, y podrá considerar suficiente cualquier documento firmado, o que aparente estar firmado, por un Firmante Autorizado.');
+    add('sub', n + '.2. La Gestora actuará de buena fe y con la diligencia debida. No será responsable frente a la Sociedad (a) de las pérdidas debidas a la falta de rentabilidad o de resultados de la gestión, ni (b) de los errores de hecho, de derecho o de juicio, ni de los actos u omisiones realizados lícitamente y de buena fe, salvo que la pérdida derive de dolo, culpa o negligencia de la Gestora o del incumplimiento de sus obligaciones conforme a este Contrato.');
+    add('sub', n + '.3. La Gestora tampoco responderá de las pérdidas que sufra la Sociedad por los actos u omisiones (a) de cualquier entidad financiera depositaria de fondos conforme a este Contrato, o (b) de cualquier contraparte o tercero (que no sea un subcontratista designado conforme a la Cláusula ' + C.del + ' ni pertenezca al grupo de la Gestora) con quien la Gestora contrate en relación con los Servicios, salvo que la pérdida derive de dolo, culpa o negligencia de la Gestora o del incumplimiento de sus obligaciones conforme a este Contrato.');
+    add('sub', n + '.4. La Gestora podrá recabar el asesoramiento jurídico que razonablemente considere necesario para el correcto cumplimiento de sus funciones. Solo cuando la Sociedad lo haya autorizado expresamente por escrito (o, en circunstancias excepcionales en que no sea posible obtener dicha autorización, cuando la Gestora actúe de buena fe), la Sociedad pagará los gastos razonables de dicho asesoramiento.');
+    add('sub', n + '.5. La Sociedad mantendrá indemne a la Gestora frente a cualesquiera acciones, procedimientos, reclamaciones, costes y gastos (incluidos los honorarios razonables de abogados y otros profesionales) que se dirijan contra ella o en que incurra por razón del cumplimiento de sus funciones conforme a este Contrato, salvo los que deriven de su dolo, culpa, negligencia o incumplimiento.');
+    add('sub', n + '.6. La Gestora no estará obligada a ejercitar acciones judiciales en relación con este Contrato o por cuenta de la Sociedad salvo que esta le garantice de forma razonablemente satisfactoria la cobertura de los costes y responsabilidades en que pudiera incurrir. La Sociedad podrá exigir a la Gestora que siga sus instrucciones razonables (incluidas las relativas a transacciones o acuerdos) en relación con cualquier reclamación por la que la Sociedad pudiera resultar finalmente responsable; no obstante, si a juicio razonable de la Gestora seguir dichas instrucciones pudiera generarle responsabilidad, la Sociedad deberá garantizarle previamente la correspondiente indemnidad.');
+
+    // 9
+    clause('ces', 'Cesión');
+    add('sub', n + '.1. Este Contrato tiene carácter personal y ninguna de las Partes podrá ceder, total o parcialmente, su posición contractual ni sus derechos sin el consentimiento previo y por escrito de la otra.');
+    add('sub', n + '.2. No obstante lo anterior, la Sociedad podrá ceder, transmitir o gravar, total o parcialmente, sus derechos derivados de este Contrato a favor de cualquier sociedad de su Grupo o de las Entidades Financiadoras, incluso en garantía.');
+
+    // 10
+    clause('res', 'Resolución y terminación');
+    add('sub', n + '.1. Resolución por la Gestora. La Gestora podrá resolver el Contrato en cualquier momento, mediante notificación escrita a la Sociedad, si esta incumple de forma relevante sus obligaciones y, siendo el incumplimiento subsanable, no lo subsana en el plazo de ' + P(v.subsanacion, 'n.º') + ' días desde que reciba el requerimiento de la Gestora.');
+    add('sub', n + '.2. Resolución por la Sociedad. La Sociedad podrá resolver el Contrato en cualquier momento, mediante notificación escrita a la Gestora, si esta incumple sus obligaciones y no lo subsana en el plazo de ' + P(v.subsanacion, 'n.º') + ' días desde que reciba el requerimiento de la Sociedad. En tal caso, la Sociedad podrá optar entre resolver el Contrato o exigir su cumplimiento, con indemnización de daños y perjuicios en ambos casos, y la Gestora no tendrá derecho a compensación ni indemnización alguna.');
+    add('sub', n + '.3. Subrogación en los contratos con terceros. Los contratos celebrados por la Gestora con terceros conforme a este Contrato, en particular los subcontratos de la Cláusula ' + C.del + ', deberán poder cederse a la entidad que sustituya a la Gestora, por lo que incluirán una cláusula que permita a la Sociedad subrogarse en ellos en caso de terminación de este Contrato.');
+    let r = 4;
+    if (v.indemnizacion) add('sub', n + '.' + (r++) + '. Terminación anticipada sin causa. Si la Sociedad pusiera fin al Contrato antes del vencimiento del Periodo Obligatorio o de la prórroga en curso por causa distinta de las previstas en esta Cláusula, abonará a la Gestora, en concepto de penalización, la totalidad de los honorarios que se habrían devengado hasta dicho vencimiento.');
+    if (v.cambio_control) add('sub', n + '.' + (r++) + '. Cambio de control. Cualquiera de las Partes podrá resolver el Contrato si se produce un cambio de Control en el accionariado de la Sociedad, mediante preaviso de treinta (30) días a la otra Parte y sin penalización para la Gestora. En tal caso, la Gestora tendrá derecho a una compensación igual a los honorarios que se habrían devengado durante el resto del periodo obligatorio en curso, que se abonará junto con los honorarios devengados hasta la fecha de terminación.');
+    add('sub', n + '.' + (r++) + '. Efectos de la terminación. A la terminación del Contrato por cualquier causa, la Gestora tendrá derecho a percibir los honorarios y demás cantidades devengados hasta esa fecha, salvo que la terminación se deba a su dolo, culpa, negligencia o incumplimiento. La Gestora entregará sin demora a la Sociedad, o a quien esta indique, todos los libros, registros, correspondencia, documentos y activos de la Sociedad que estén en su poder o en el de sus subcontratistas, y realizará cuanto sea necesario para transmitir a la Sociedad o a la nueva gestora los activos que tuviera a su nombre por cuenta de la Sociedad.');
+    add('sub', n + '.' + (r++) + '. La terminación se entiende sin perjuicio de los derechos que cualquiera de las Partes tenga frente a la otra por incumplimientos anteriores. Las Cláusulas de responsabilidad, confidencialidad, notificaciones, ley aplicable y jurisdicción seguirán vigentes tras la terminación.');
+
+    // 11+
+    clause('soc', 'Inexistencia de sociedad');
+    add('sub', 'Nada de lo previsto en este Contrato constituirá a las Partes en socias ni facultará a ninguna de ellas para obligar a la otra frente a terceros ni para comprometer su crédito.');
+    clause('conf', 'Confidencialidad');
+    add('sub', 'Ninguna de las Partes revelará, durante la vigencia del Contrato ni después de su terminación, salvo autorización de la otra Parte o requerimiento de un juzgado o autoridad administrativa competente, información alguna sobre el negocio, las inversiones, las finanzas u otros asuntos confidenciales de la otra Parte que conozca con ocasión de este Contrato, y cada Parte hará cuanto esté razonablemente a su alcance para evitar dicha revelación.');
+    clause('add', 'Servicios adicionales');
+    add('sub', 'Si la Sociedad solicita a la Gestora, y esta acepta, la prestación de servicios extraordinarios o especiales no incluidos en la Cláusula ' + C.serv + ', la Gestora tendrá derecho a percibir los honorarios adicionales que las Partes acuerden por escrito.');
+    if (num(v.seguro)) {
+      clause('seg', 'Seguro');
+      add('sub', 'La Gestora mantendrá vigente durante toda la duración del Contrato un seguro de responsabilidad civil profesional que cubra los riesgos derivados de la prestación de los Servicios, con una suma asegurada mínima de ' + v.seguro.trim() + ' euros, y acreditará su vigencia a requerimiento de la Sociedad.');
+    }
+    clause('dat', 'Protección de datos');
+    add('sub', 'Las Partes cumplirán la normativa de protección de datos personales. En la medida en que la Gestora trate datos personales por cuenta de la Sociedad, las Partes suscribirán el correspondiente contrato de encargo del tratamiento conforme al artículo 28 del Reglamento (UE) 2016/679.');
+    clause('not', 'Notificaciones');
+    add('sub', 'Las notificaciones relativas a este Contrato se realizarán por escrito mediante entrega en mano, burofax, carta certificada con acuse de recibo o correo electrónico con confirmación de recepción, dirigidas al domicilio social de la otra Parte o a las siguientes direcciones de correo electrónico: Gestora: ' + P(v.email_g, 'correo electrónico') + '; Sociedad: ' + P(v.email_s, 'correo electrónico') + '. Cualquier cambio deberá comunicarse a la otra Parte por escrito.');
+    clause('mod', 'Modificaciones');
+    add('sub', 'Este Contrato solo podrá modificarse por acuerdo escrito firmado por ambas Partes.');
+    clause('int', 'Acuerdo íntegro y nulidad parcial');
+    add('sub', n + '.1. Este Contrato contiene el acuerdo íntegro de las Partes sobre su objeto y sustituye a cualquier acuerdo anterior entre ellas sobre la misma materia.');
+    add('sub', n + '.2. Cada Parte declara que no ha contratado en atención a manifestaciones, garantías o compromisos no recogidos en este Contrato.');
+    add('sub', n + '.3. Si alguna disposición de este Contrato fuera declarada nula o inaplicable, se tendrá por no puesta y las restantes conservarán su validez. Las Partes negociarán de buena fe una disposición sustitutiva que respete en lo posible la finalidad de la anulada.');
+    clause('ren', 'Renuncia');
+    add('sub', 'La renuncia a cualquier derecho derivado de este Contrato solo será eficaz si consta por escrito y firmada por la Parte que renuncia. El hecho de no ejercitar, o de retrasar el ejercicio de, cualquier derecho no implicará renuncia al mismo ni a otros derechos.');
+    clause('ley', 'Ley aplicable y jurisdicción');
+    add('sub', 'Este Contrato se rige por la ley española. Las Partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de ' + P(v.plaza, 'plaza') + '.');
+    clause('eje', 'Ejemplares');
+    add('sub', 'Las Partes firman este Contrato en dos ejemplares, o mediante firma electrónica, a un solo efecto, en el lugar y fecha indicados al principio.');
+
+    add('sign', JSON.stringify([
+      ['Por ' + P(v.g_nombre, 'GESTORA'), P(v.g_rep, 'nombre'), P(v.g_cargo, 'cargo')],
+      ['Por ' + P(v.s_nombre, 'SOCIEDAD'), P(v.s_rep, 'nombre'), P(v.s_cargo, 'cargo')],
+    ]));
+
+    if (num(v.activos)) {
+      add('pb', '');
+      add('h0', 'ANEXO I · ACTIVOS');
+      v.activos.split('\n').map(s => s.trim()).filter(Boolean).forEach((s, i) => add('li', (i + 1) + '. ' + s));
+    }
+
+    // resolver referencias {{key}}
+    B.forEach(b => { b.t = b.t.replace(/\{\{(\w+)\}\}/g, (_, k) => C[k] || '?'); });
+    return B;
+  }
+
+  const api = { FUNCIONES, DEFAULTS, build };
+  if (typeof module !== 'undefined') module.exports = api; else root.OMA = api;
+})(this);
+</script>
+<script>(function (root) {
+function makeDoc(D, blocks) {
+  const { Document, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, PageBreak, Footer, PageNumber } = D;
+const FONT = 'Times New Roman';
+function runs(t, base = {}) {
+  // ⟦…⟧ → resaltado amarillo, entre corchetes
+  const out = [];
+  t.split(/(⟦[^⟧]*⟧)/).forEach(seg => {
+    if (!seg) return;
+    if (seg.startsWith('⟦')) out.push(new TextRun({ text: '[' + seg.slice(1, -1) + ']', highlight: 'yellow', font: FONT, size: 22, ...base }));
+    else out.push(new TextRun({ text: seg, font: FONT, size: 22, ...base }));
+  });
+  return out;
+}
+const sp = { after: 120, line: 300 };
+const children = [];
+for (const b of blocks) {
+  switch (b.k) {
+    case 'title': children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 1800, after: 480 }, children: runs(b.t, { bold: true, size: 32 }) })); break;
+    case 'center': children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: runs(b.t, { bold: true, size: 24 }) })); break;
+    case 'h0': children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 360, after: 200 }, keepNext: true, children: runs(b.t, { bold: true }) })); break;
+    case 'h': children.push(new Paragraph({ spacing: { before: 280, after: 140 }, keepNext: true, children: runs(b.t.toUpperCase(), { bold: true }) })); break;
+    case 'sub': children.push(new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: sp, children: runs(b.t) })); break;
+    case 'sub2': children.push(new Paragraph({ spacing: { before: 160, after: 100 }, indent: { left: 360 }, keepNext: true, children: runs(b.t, { bold: true }) })); break;
+    case 'li': {
+      let r;
+      if (b.b) { const rest = b.t.slice(b.b.length + 2); r = [...runs('«' + b.b + '»', { bold: true }), ...runs(rest)]; }
+      else if (b.bt) r = [...runs(b.bt, { bold: true }), ...runs(b.t.slice(b.bt.length))];
+      else r = runs(b.t);
+      children.push(new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: sp, indent: { left: 720 }, children: r })); break;
+    }
+    case 'p': children.push(new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: sp, children: runs(b.t) })); break;
+    case 'pb': children.push(new Paragraph({ children: [new PageBreak()] })); break;
+    case 'sign': {
+      const s = JSON.parse(b.t);
+      const none = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+      const cell = (lines) => new TableCell({ width: { size: 4513, type: WidthType.DXA }, borders: { top: none, bottom: none, left: none, right: none },
+        children: [new Paragraph({ spacing: { before: 240, after: 1200 }, children: runs(lines[0], { bold: true }) }),
+          new Paragraph({ border: { top: { style: BorderStyle.SINGLE, size: 4, color: '000000', space: 4 } }, children: runs(lines[1]) }),
+          new Paragraph({ children: runs(lines[2]) })] });
+      children.push(new Paragraph({ spacing: { before: 360 }, keepNext: true, children: runs('Y en prueba de conformidad, las Partes firman el presente Contrato en el lugar y la fecha indicados en el encabezamiento.') }));
+      children.push(new Table({ width: { size: 9026, type: WidthType.DXA }, columnWidths: [4513, 4513], rows: [new TableRow({ children: [cell(s[0]), cell(s[1])] })] }));
+      break;
+    }
+  }
+}
+// salto de página tras la portada (tras el 5.º bloque centrado)
+children.splice(5, 0, new Paragraph({ children: [new PageBreak()] }));
+
+return new Document({
+  styles: { default: { document: { run: { font: FONT, size: 22 } } } },
+  sections: [{
+    properties: { page: { margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } } },
+    footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 18 })] })] }) },
+    children,
+  }],
+});
+}
+if (typeof module !== 'undefined') module.exports = makeDoc; else root.makeOmaDoc = makeDoc;
+})(this);
+</script>
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const F = window.OMA;
+  const textIds = ['operacion','activos','relacion','lugar','fecha','g_nombre','g_forma','g_domicilio','g_nif','g_registro','g_rep','g_cargo','email_g','s_nombre','s_forma','s_domicilio','s_nif','s_registro','s_rep','s_cargo','email_s','duracion','prorroga','preaviso','subsanacion','honorario','periodicidad','dias_pago','overhead','setup','adquisicion','desinversion','exito','hurdle','demora','limite','seguro','plaza'];
+  const boolIds = ['cotizada','ipc','claseB','indemnizacion','cambio_control'];
+
+  // lista de funciones
+  const box = $('funciones');
+  F.FUNCIONES.forEach((g, gi) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'fx' + (gi === F.FUNCIONES.length - 1 ? ' add' : '');
+    const h = document.createElement('p'); h.className = 'sub'; h.textContent = g.grupo; wrap.appendChild(h);
+    g.items.forEach(it => {
+      const l = document.createElement('label'); l.className = 'check';
+      const c = document.createElement('input'); c.type = 'checkbox'; c.id = 'fn-' + it.id; c.value = it.id;
+      c.checked = !it.cot && gi !== F.FUNCIONES.length - 1;
+      if (it.cot) c.dataset.cot = '1';
+      l.appendChild(c); l.appendChild(document.createTextNode(it.t)); wrap.appendChild(l);
+    });
+    box.appendChild(wrap);
+  });
+
+  function values(){
+    const v = {};
+    textIds.forEach(id => v[id] = $(id).value);
+    boolIds.forEach(id => v[id] = $(id).checked);
+    v.funciones = [...box.querySelectorAll('input:checked')].map(c => c.value);
+    return v;
+  }
+
+  function esc(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  function marks(s){ return esc(s).replace(/⟦([^⟧]*)⟧/g, '<mark>[$1]</mark>'); }
+
+  function render(){
+    const B = F.build(values());
+    let html = '';
+    for (const b of B){
+      if (b.k === 'title') html += '<div class="t">' + marks(b.t) + '</div>';
+      else if (b.k === 'center') html += '<div class="c">' + marks(b.t) + '</div>';
+      else if (b.k === 'h0') html += '<div class="h0">' + marks(b.t) + '</div>';
+      else if (b.k === 'h') html += '<div class="h">' + marks(b.t) + '</div>';
+      else if (b.k === 'sub2') html += '<p class="s2">' + marks(b.t) + '</p>';
+      else if (b.k === 'li'){
+        let t = marks(b.t);
+        if (b.b) t = '<b>«' + esc(b.b) + '»</b>' + marks(b.t.slice(b.b.length + 2));
+        else if (b.bt) t = '<b>' + marks(b.bt) + '</b>' + marks(b.t.slice(b.bt.length));
+        html += '<p class="li">' + t + '</p>';
+      }
+      else if (b.k === 'sign'){
+        const s = JSON.parse(b.t);
+        html += '<p>Y en prueba de conformidad, las Partes firman el presente Contrato en el lugar y la fecha indicados en el encabezamiento.</p><div class="sign">' +
+          s.map(x => '<div><b>' + marks(x[0]) + '</b><br><br><br><span>' + marks(x[1]) + '<br>' + marks(x[2]) + '</span></div>').join('') + '</div>';
+      }
+      else if (b.k === 'pb') html += '<hr style="border:0;border-top:1px dashed var(--line);margin:28px 0">';
+      else html += '<p>' + marks(b.t) + '</p>';
+    }
+    $('sheet').innerHTML = html;
+    try { localStorage.setItem('oma-draft', JSON.stringify(values())); } catch(e){}
+  }
+
+  function fill(v){
+    textIds.forEach(id => { if (v[id] !== undefined) $(id).value = v[id]; });
+    boolIds.forEach(id => { if (v[id] !== undefined) $(id).checked = !!v[id]; });
+    if (Array.isArray(v.funciones)) box.querySelectorAll('input').forEach(c => c.checked = v.funciones.includes(c.value));
+    render();
+  }
+
+  $('f').addEventListener('input', render);
+  $('f').addEventListener('change', render);
+  $('f').addEventListener('submit', e => e.preventDefault());
+  $('cotizada').addEventListener('change', e => { box.querySelectorAll('[data-cot]').forEach(c => c.checked = e.target.checked); render(); });
+
+  $('b-ejemplo').addEventListener('click', () => fill({
+    operacion: 'la adquisición, gestión y posterior venta de un edificio de oficinas en Madrid (ejemplo)',
+    activos: 'Edificio de oficinas en C/ Ejemplo, 1, Madrid. Finca registral n.º 0000 (ejemplo)',
+    lugar: 'Madrid', fecha: '1 de enero de 2027',
+    g_nombre: 'GESTORA EJEMPLO', g_domicilio: 'C/ Ejemplo, 1, 28001 Madrid', g_nif: 'B-00000000', g_rep: 'Nombre Apellido', g_cargo: 'administradora única',
+    s_nombre: 'SOCIEDAD EJEMPLO', s_domicilio: 'C/ Ejemplo, 2, 28001 Madrid', s_nif: 'B-11111111', s_rep: 'Nombre Apellido', s_cargo: 'administrador único',
+    duracion: '3', honorario: '60.000', overhead: '10', setup: '15.000', adquisicion: '1', exito: '', claseB: true, limite: '250.000', seguro: '600.000'
+  }));
+  $('b-limpiar').addEventListener('click', () => {
+    textIds.forEach(id => $(id).value = $(id).defaultValue);
+    boolIds.forEach(id => $(id).checked = $(id).defaultChecked);
+    box.querySelectorAll('input').forEach(c => c.checked = c.defaultChecked);
+    render();
+  });
+
+  const status = $('status');
+  $('b-word').addEventListener('click', async () => {
+    status.textContent = 'Preparando el Word…';
+    try {
+      if (!window.docx) throw { code: 'lib' };
+      const doc = window.makeOmaDoc(window.docx, F.build(values()));
+      const blob = await window.docx.Packer.toBlob(doc);
+      const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+      const name = 'Contrato de gestion' + ($('s_nombre').value.trim() ? ' - ' + $('s_nombre').value.trim().replace(/[\\/:*?"<>|]/g, '') : '') + '.docx';
+      if (dl) await dl.save({ filename: name, data: blob });
+      else { const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+      status.textContent = 'Word descargado.';
+    } catch (e) {
+      const c = e && e.code;
+      status.textContent = c === 'declined' ? 'Descarga cancelada.' : c === 'lib' ? 'No se ha podido cargar el generador de Word. Recarga la página.' : c === 'rate_limited' ? 'Ya hay una descarga pendiente de confirmar.' : 'No se ha podido descargar: ' + (e && e.message || 'error desconocido');
+    }
+  });
+
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('oma-draft') || 'null'); } catch(e){}
+  if (saved) fill(saved); else render();
+})();
+</script>

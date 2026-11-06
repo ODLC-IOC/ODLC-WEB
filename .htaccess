@@ -1,0 +1,14 @@
+# gestion.odlc.es — área privada de Isabel (solo con su cuenta de Microsoft)
+Options -Indexes
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Nada se sirve directamente: todo pasa por index.php, que comprueba la sesión
+RewriteRule ^index\.php$ - [L]
+RewriteRule ^ index.php [QSA,L]
