@@ -125,7 +125,7 @@ if (preg_match('#^/c/([A-Za-z0-9_-]{22})(?:/(informe|informe\.pdf))?$#', $path, 
     send_file($d['archivo'], !empty($d['descarga']) && isset($_GET['descargar']));
 }
 // Imagen de vista previa del enlace de cada cliente (WhatsApp, correo, LinkedIn…)
-if (preg_match('#^/og/([a-z0-9-]+)\.png$#', $path, $m) && isset($CLI[$m[1]])) { header('Cache-Control: public, max-age=86400'); send_file('og/' . $m[1] . '.png'); }
+if (preg_match('#^/og/([a-z0-9-]+)\.png$#', $path, $m) && isset($CLI[$m[1]])) { header('Cache-Control: public, max-age=3600'); send_file('og/' . $m[1] . '.png'); }
 // Enlace antiguo /p/<enlace> → su página
 if (preg_match('#^/p/([A-Za-z0-9_-]{20,})#', $dpath, $m)) foreach ($CLI as $c) if (hash_equals((string)$c['enlace'], $m[1])) { header('Location: /' . rawurlencode($c['slug']) . '?k=' . $c['enlace'], true, 302); exit; }
 foreach ($CLI as $cid => $c) {
@@ -135,9 +135,9 @@ foreach ($CLI as $cid => $c) {
     $ck = 'odlc_c_' . $cid; $okv = g_sign('cli|' . $cid . '|' . $c['enlace'] . '|' . $c['clave']);
     // 0) Vista previa para WhatsApp y demás: tarjeta con la imagen, sin dar acceso
     if (preg_match('/WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|SkypeUriPreview|Microsoft|Googlebot|bingbot|Applebot|iMessage/i', (string)($_SERVER['HTTP_USER_AGENT'] ?? '')) && !hash_equals($okv, (string)($_COOKIE[$ck] ?? ''))) {
-        $h = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'gestion.odlc.es'); $t = esc($c['nombre'] . ' · Portal de cliente · OdlC');
+        $h = 'https://' . ($_SERVER['HTTP_HOST'] ?? 'gestion.odlc.es'); $t = esc('Zona privada · ' . $c['nombre']);
         http_response_code(200); header('Content-Type: text/html; charset=utf-8');
-        echo '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' . $t . '</title><meta property="og:type" content="website"><meta property="og:site_name" content="OdlC"><meta property="og:title" content="' . $t . '"><meta property="og:description" content="Vuestro espacio privado con OdlC: presentaciones, informes y documentos por servicio."><meta property="og:image" content="' . esc($h . '/og/' . $cid . '.png') . '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="robots" content="noindex,nofollow"></head><body></body></html>';
+        echo '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' . $t . '</title><meta property="og:type" content="website"><meta property="og:site_name" content="OdlC"><meta property="og:title" content="' . $t . '"><meta property="og:description" content="OdlC · gestion.odlc.es"><meta property="og:image" content="' . esc($h . '/og/' . $cid . '.png') . '"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="robots" content="noindex,nofollow"></head><body></body></html>';
         exit;
     }
     // 1) Enlace con llave: se guarda en el navegador y se quita de la barra
