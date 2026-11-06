@@ -12,7 +12,7 @@ return [
     'compliance'     => ['Compliance', 'Prevención del blanqueo, protección de datos, canal interno y perímetro regulatorio.'],
     'branding'       => ['Branding y web', 'Marca, logotipo, web, zona privada, presentaciones e informes con vuestra imagen.'],
     'contabilidad'   => ['Contabilidad y fiscal', 'Contabilidad, impuestos, facturación con VeriFactu y cierres.'],
-    'estrategia'     => ['Estrategia e inversión', 'Plan de negocio, modelos, coinversión, gestión de proyectos e informes a inversores.'],
+    'estrategia'     => ['Estrategia', 'Plan de negocio, modelos, coinversión, gestión de proyectos e informes a inversores.'],
     'tecnologia'     => ['Tecnología e IA', 'CRM, automatizaciones, agentes de IA y ciberseguridad.'],
     'seguros'        => ['Seguros', 'Responsabilidad civil y coberturas de cada operación.'],
     'admin'          => ['Administración OdlC', 'Facturas de OdlC y contratos firmados entre vosotros y OdlC.'],
