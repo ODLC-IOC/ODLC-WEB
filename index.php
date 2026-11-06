@@ -155,7 +155,8 @@ foreach ($CLI as $cid => $c) {
         if (!empty($c['clave'])) html_page($c['nombre'] . ' · OdlC', '<form class="login" method="post" action="' . esc($base) . '/entrar"><div class="eb">OdlC · Portal de ' . esc($c['nombre']) . '</div><h2>Acceso privado</h2>' . (!empty($err) ? '<p style="color:#9B2C2C">' . esc($err) . '</p>' : '') . '<input type="password" name="clave" placeholder="Contraseña" autocomplete="current-password" required><button class="btn">Entrar</button></form>', 401);
         html_page($c['nombre'] . ' · OdlC', '<div class="login"><div class="eb">OdlC · Portal de ' . esc($c['nombre']) . '</div><h2>Acceso privado</h2><p>Para entrar, usa el enlace que te ha enviado OdlC.</p></div>', 401);
     }
-    $vis = array_filter($c['docs'], fn($d) => !empty($d['cliente']));
+    // El cliente ve lo marcado 'cliente'; Isabel ve además lo interno (p. ej. el guión), marcado «Solo tú»
+    $vis = $isAdmin ? $c['docs'] : array_filter($c['docs'], fn($d) => !empty($d['cliente']));
     if (preg_match('#^compartir/([a-z0-9-]+)$#', $rest, $cm) && $method === 'POST') {
         if (!isset($vis[$cm[1]]) && !($isAdmin && isset($c['docs'][$cm[1]]))) send_json_g(['error' => 'No encontrado'], 404);
         send_json_g(['url' => 'https://' . ($_SERVER['HTTP_HOST'] ?? 'gestion.odlc.es') . '/c/' . share_create($cid, $cm[1], $isAdmin ? (string)g_user() : $c['nombre'])]);
@@ -175,7 +176,7 @@ foreach ($CLI as $cid => $c) {
     } else {
         [$title, $dsc] = $SERV[$sec];
         $main = '<p>' . esc($dsc) . '</p>'; $cards = '';
-        foreach ($vis as $id => $d) if ($d['servicio'] === $sec) $cards .= doc_card($d, $id === 'presentacion' ? $base . '/presentacion' : $base . '/d/' . $id, false, $c['nombre'], $base . '/compartir/' . $id);
+        foreach ($vis as $id => $d) if ($d['servicio'] === $sec) $cards .= doc_card($d + (empty($d['cliente']) ? ['tipo' => $d['tipo'] . ' · Solo tú'] : []), $id === 'presentacion' ? $base . '/presentacion' : $base . '/d/' . $id, false, $c['nombre'], empty($d['cliente']) ? '' : $base . '/compartir/' . $id);
         $main .= $cards !== '' ? '<div class="docs">' . $cards . '</div>' : '<div class="empty"><h3>En preparación</h3><p>Cuando OdlC empiece a trabajar en esta área, aquí aparecerán vuestros documentos.</p></div>';
     }
     html_page($c['nombre'] . ' · OdlC', shell('Od<i>l</i>C', 'Portal de ' . esc($c['nombre']), $nav, $title, $main, '<div class="who">' . ($isAdmin ? 'Vista de Isabel (como el cliente)' : 'Espacio privado de ' . esc($c['nombre'])) . '</div>', $isAdmin ? picker($CLI, $cid) : ''));
