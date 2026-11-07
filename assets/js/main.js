@@ -86,7 +86,7 @@ var LANZAMIENTO = { hasta: '', texto: '' };
   var d0 = new Date();
   var TODAY = d0.getFullYear() + '-' + String(d0.getMonth() + 1).padStart(2, '0') + '-' + String(d0.getDate()).padStart(2, '0');
   var esc = function (t) { var e = document.createElement('i'); e.textContent = t; return e.innerHTML; };
-  var POSTS = (window.BLOG || []).filter(function (x) { return /[?&]todos=1/.test(location.search) || x.date <= TODAY; });
+  var POSTS = (window.BLOG || []).filter(function (x) { return /[?&]todos=1/.test(location.search) || (!x.draft && x.date && x.date <= TODAY); });
   var bl = document.getElementById('post-list');
   if (bl && POSTS.length) {
     var pre = bl.getAttribute('data-prefix') || '';
