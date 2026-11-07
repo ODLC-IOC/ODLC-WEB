@@ -44,9 +44,9 @@ En `assets/js/main.js`, rellenar `LANZAMIENTO` con fecha de fin y texto. Aparece
 
 Los 26 artículos están ya en `blog/`, uno por lunes. La portada del blog solo muestra los que ya han llegado a su fecha, así que se puede subir todo de una vez. Para ver todos antes de tiempo: `blog/index.html?todos=1`. Los textos se generan con `build_blog.py` y `blog_data.py`; si se edita un artículo a mano, mantener la fecha en sus datos estructurados.
 
-## Reservar sesión (Microsoft Bookings, 04/11/2026)
+## Reservar sesión (citas.odlc.es, 05/11/2026)
 
-En `assets/js/main.js`: `CALENDAR_URL` es la sesión gratuita y la usan todos los botones «Reservar sesión» (se abre en pestaña nueva); `DIAGNOSTICO_URL` es la reunión de arranque del Diagnóstico y aparece en `reservar-sesion.html` y en la página del Diagnóstico. El formulario de `reservar-sesion.html` se mantiene como alternativa por escrito y es adonde lleva «Enviarnos el resultado» del Mapa de empresa.
+En `assets/js/main.js`: `CALENDAR_URL` (`https://citas.odlc.es/reservar?tipo=sesion`) es la sesión gratuita y la usan todos los botones «Reservar sesión» (se abre en pestaña nueva); `DIAGNOSTICO_URL` (`https://citas.odlc.es/reservar?tipo=diagnostico`) es la reunión de arranque del Diagnóstico y aparece en `reservar-sesion.html` y en la página del Diagnóstico. El formulario de `reservar-sesion.html` se mantiene como alternativa por escrito y es adonde lleva «Enviarnos el resultado» del Mapa de empresa.
 
 ## Imágenes
 
@@ -54,12 +54,12 @@ Imágenes para redes de cada página en `assets/img/og/` y portadas de los 26 ar
 
 ## Cookies (art. 22.2 LSSI y Guía de cookies de la AEPD, 2023)
 
-- Hoy la web **no instala ninguna cookie** hasta que alguien guarda una elección, ni se conecta a terceros: las tipografías están alojadas en `assets/fonts/`. Por eso no aparece aviso: no hay nada que consentir.
+- **Google Analytics 4 activo desde el 4/11/2026** (`GA4_ID = 'G-DY3P85H57T'`). No se carga hasta que la persona acepta las cookies analíticas, con Google Signals y la personalización de anuncios desactivados. Las tipografías siguen alojadas en `assets/fonts/`.
 - `assets/js/cookies.js` es el gestor. Para medir visitas o campañas, pegar el identificador en `GA4_ID` (Google Analytics 4) o `LINKEDIN_PARTNER_ID` (LinkedIn Insight Tag). El aviso aparece solo, con «Aceptar todas», «Rechazar todas» y «Configurar» al mismo nivel, y las herramientas no se cargan hasta que la persona acepta.
 - La tabla de `politica-de-cookies.html` se rellena sola con lo que esté activo. «Configurar cookies», al pie de todas las páginas, permite cambiar o retirar el consentimiento.
 - Si se añade cualquier otra herramienta de terceros (vídeo incrustado, chat, píxel), hay que darla de alta en el gestor y en la política antes de publicarla.
 - Antes de publicar: completar NIF y domicilio en aviso legal, privacidad y cookies.
-- Revisión del 04/11/2026: la web sigue sin instalar cookies, así que no lleva aviso. Política de privacidad ampliada (Mapa de empresa, Recursos, Netlify como encargado y transferencia con el Marco de Privacidad UE-EE. UU.). Firmar el DPA de Netlify. Si se incrusta el calendario de reservas dentro de la web (iframe de Calendly o similar), darlo de alta en `cookies.js` antes: instala cookies de terceros. Para medir visitas sin aviso, usar una analítica sin cookies (p. ej. Netlify Analytics, en servidor) y mencionarla en la política de privacidad.
+- Revisión del 04/11/2026 (antes de activar Google Analytics): Política de privacidad ampliada (Mapa de empresa, Recursos, Netlify como encargado y transferencia con el Marco de Privacidad UE-EE. UU.). Firmar el DPA de Netlify. Si se incrusta el calendario de reservas dentro de la web (iframe de Calendly o similar), darlo de alta en `cookies.js` antes: instala cookies de terceros. Para medir visitas sin aviso, usar una analítica sin cookies (p. ej. Netlify Analytics, en servidor) y mencionarla en la política de privacidad.
 
 ## Newsletter «Empresas y Patrimonios en Orden»
 
@@ -85,7 +85,7 @@ En `red-de-colaboradores.html` cada área con partner lleva ficha propia (clase 
 2. Google Analytics solo se carga después de «Aceptar». Señales de Google y personalización de anuncios desactivadas en el código.
 3. En Google Analytics → Administrar: retención de datos de eventos **14 meses** (la política de privacidad dice 14 meses); señales de Google **desactivadas**; aceptar las condiciones de tratamiento de datos; recogida de datos granulares de ubicación y dispositivo **desactivada**.
 4. Medición mejorada activada (incluye descargas de PDF y ZIP). Evento propio `mapa_completado` desde el Mapa de empresa.
-5. Eventos clave dados de alta: `mapa_completado`, `file_download`, `gracias.html` (solicitud por formulario) y `newsletter-gracias.html`. Añadir `reservar_sesion` (clic en Microsoft Bookings, con el parámetro `tipo`: `sesion_gratuita` o `arranque_diagnostico`), porque la mayoría de las reservas ya no pasan por `gracias.html`.
+5. Eventos clave dados de alta: `mapa_completado`, `file_download`, `gracias.html` (solicitud por formulario) y `newsletter-gracias.html`. Añadir `reservar_sesion` (clic en reservar en citas.odlc.es, con el parámetro `tipo`: `sesion_gratuita` o `arranque_diagnostico`), porque la mayoría de las reservas ya no pasan por `gracias.html`.
 6. ID de medición configurado: `G-DY3P85H57T`.
 
 ## Tarjeta digital, QR, reservas y reuniones (05/11/2026)
