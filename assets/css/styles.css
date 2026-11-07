@@ -703,3 +703,14 @@ section.alt .route-letter{background:var(--stone-2)}
 .km-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:var(--green);color:#fff;border-radius:var(--r);padding:22px 24px;margin-top:30px}
 .km-cta h4{color:#fff!important;margin:0 0 6px!important}.km-cta p{margin:0;color:#D7DED9;max-width:560px}
 @media (max-width:600px){.km-box{padding:20px}.km-row .btn{width:100%}}
+
+/* Recursos ordenados por las fases del recorrido */
+.rs-route{padding:44px 0 8px!important}
+.rs-phase-head{padding:64px 0 0!important;border-top:3px solid var(--green)}
+.rs-head{display:flex;gap:20px;align-items:flex-start;max-width:820px}
+.rs-head .route-letter,section.alt .rs-head .route-letter{flex:0 0 56px;margin:0;background:var(--brass);color:#fff}
+.rs-head h2{font-size:clamp(26px,3vw,34px)}
+.rs-head p{color:var(--muted);margin:8px 0 0}
+.rs-item{padding:36px 0 64px!important}
+.rs-phase-head + .rs-item{padding-top:28px!important}
+.rs-item + .rs-item{padding-top:0!important}
