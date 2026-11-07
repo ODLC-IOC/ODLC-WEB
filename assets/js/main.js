@@ -2,7 +2,7 @@
    DIAGNOSTICO_URL: reunión de arranque del Diagnóstico ODLC, para quien ya ha decidido contratarlo. */
 var CALENDAR_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/SVRwCe7HMUGxuT6WGxi68g2?anonymous&ismsaljsauthenabled';
 var DIAGNOSTICO_URL = 'https://bookings.cloud.microsoft/bookwithme/user/d594d5219033429891a302de800a95e0@ODLC.ES/meetingtype/5brH_X0naU6HDKSPi0UEOw2?anonymous&ismsaljsauthenabled';
-var CONTACT_EMAIL = 'isabel@odlc.es';
+var CONTACT_EMAIL = 'hola@odlc.es';
 /* Cuando Isabel cree la newsletter «Empresas y Patrimonios en Orden» en LinkedIn, pegar aquí su enlace. El botón aparece solo. */
 var NEWSLETTER_URL = '';
 /* Tarifa de lanzamiento: con fecha de fin (AAAA-MM-DD) y texto, aparece sola en portada, recorrido, tarifas y calculadora,
